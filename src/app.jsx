@@ -13,7 +13,12 @@ class App extends Component {
         console.log(this);
         console.log(index, event);
     };
-    
+
+    _onThumbnailClick = (index, event) => {
+        console.log(this);
+        console.log(index, event);
+    };
+
     render = () => {
         const images = [{
             original: 'http://c7.staticflickr.com/4/3868/18982735806_b80b024040_h.jpg',
@@ -30,10 +35,13 @@ class App extends Component {
             <section
                 className="app">
                 <GallerySwiper
-                    ref={i => this._imageGallery = i}
+                    ref={i => this._gallerySwiper = i}
                     images={images}
+                    showBullets={true}
+                    showIndex={true}
                     onClick={this._onImageClick}
                     onThumbnailHover={this._onThumbnailHover}
+                    onThumbnailClick={this._onThumbnailClick}
                     />
             </section>
         );
