@@ -4,6 +4,7 @@
     "react",
     "stage-1"
   ],
+  "plugins": ["transform-remove-strict-mode"],
   "env": {
     "development": {
         "development": ["react-transform"],
