@@ -7,7 +7,9 @@ taskDir(gulp, path.join(__dirname, 'tasks'));
 
 gulp.task('watch', () => {
     livereload.listen();
+    gulp.watch('src/*.scss', ['build']);
     gulp.watch('src/*.jsx', ['build']);
+    gulp.watch('src/**/*.js', ['build']);
     gulp.watch('example/src/*.jsx', ['build']);
 });
 
