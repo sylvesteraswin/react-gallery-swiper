@@ -1,20 +1,46 @@
 @import "mixins";
 
-.zvui-gallery-swiper {
+@mixin vendor-prefix($name, $value) {
+  @each $vendor in ('-webkit-', '-moz-', '-ms-', '-o-', '') {
+    #{$vendor}#{$name}: #{$value};
+  }
+}
+
+$base-class: zvui-gallery-swiper;
+
+.#{$base-class} {
     @include vendor-prefix('user-select', none);
 
     &-content {
         top: 0;
+        @include flexbox();
+        @include flex-direction(column);
+    }
 
+    &.alignY {
+        .#{$base-class} {
+            &-content {
+                @include flex-direction(row);
+            }
+        }
     }
     &-slides-wrapper {
         position: relative;
+    }
+
+    &.alignY {
+        .#{$base-class} {
+            &-slides-wrapper {
+                order: 2;
+            }
+        }
     }
 
     &-navigation {
         cursor: pointer;
         position: absolute;
         z-index: 4;
+        
         &::before {
             color: #fff;
             line-height: .7;
@@ -161,6 +187,19 @@
         &.active {
             img {
                 border: 4px solid #000;
+            }
+        }
+    }
+
+    &.alignY {
+        .#{$base-class} {
+            &-thumbnails {
+                order: 1;
+                padding: 0 5px;
+                flex-basis: 17.5rem;
+            }
+            &-thumbnail {
+                display: block;
             }
         }
     }

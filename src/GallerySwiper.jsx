@@ -37,14 +37,18 @@ class GallerySwiper extends Component {
         if (disableArrowKeys !== newDisableArrowKeys) {
             if (newDisableArrowKeys) {
                 const {
-                    keyDown,
+                    handleKeyDown,
                 } = this.state.events
 
                 if (keyDown) {
                     removeEvent(keyDown);
                 }
             } else {
-                addEvent(window, 'keydown', this._handleKeyDown, this);
+                this.setState({
+                    events: {
+                        handleKeyDown: addEvent(window, 'keydown', this._handleKeyDown, this),
+                    }
+                });
             }
         }
     };
@@ -101,19 +105,75 @@ class GallerySwiper extends Component {
     componentDidMount = () => {
         // delay the event handler to make sure we get the correct image offset width and height
         setTimeout(() => this._handleResize(), 500);
+
+        const {
+            disableArrowKeys
+        } = this.props;
+
+        if (!disableArrowKeys) {
+            this.setState({
+                events: Object.assign({}, this.state.events, {
+                    handleKeyDown: addEvent(window, 'keydown', this._handleKeyDown, this),
+                })
+            }, () => {
+                this.setState({
+                    events: Object.assign({}, this.state.events, {
+                        handleResize: addEvent(window, 'resize', this._handleResize, this),
+                    })
+                });
+            });
+        }
+
+
     };
 
     componentWillUnMount = () => {
+        const {
+            disableArrowKeys
+        } = this.props;
 
+        const {
+            handleKeyDown,
+            handleResize,
+        } = this.state.events;
+
+        if (!disableArrowKeys) {
+            removeEvent(handleKeyDown);
+        }
+
+        removeEvent(handleResize);
     };
 
     goTo = (index, event) => {
+        if (event) {
+            event.preventDefault();
+        }
 
+        const {
+            images
+        } = this.props;
+
+        const {
+            currentIndex: previousIndex,
+        } = this.state;
+
+        const lastImage = images.length - 1;
+        let currentIndex = index;
+
+        if (index < 0) {
+            currentIndex = lastImage;
+        } else if (index > lastImage) {
+            currentIndex = 0;
+        }
+
+        this.setState({
+            previousIndex,
+            currentIndex,
+            offsetPercentage: 0,
+        });
     };
 
-    whereAmI = () => {
-
-    };
+    whereAmI = () => this.state.currentIndex;
 
     _setThumbsTranslate = (thumbsTranslate) => {
         const {
@@ -365,12 +425,9 @@ class GallerySwiper extends Component {
         // const
     };
 
-    _handleSwiping = (index, _, delta) => {
-        const {
-            galleryWidth
-        } = this.state;
-        const offsetPercentage = index * (delta / galleryWidth * 100);
-    };
+    _handleOnSwiped = () => {};
+
+    _handleOnSwipedTo = () => {};
 
     _renderItem = (img) => {
         const {
@@ -416,6 +473,131 @@ class GallerySwiper extends Component {
         );
     };
 
+    _getThumbnailStyle = () => {
+        const {
+            thumbnailPosition,
+        } = this.props;
+
+        const {
+            thumbsTranslateX,
+            thumbsTranslateY,
+        } = this.state;
+
+        let translate3d;
+
+        if (thumbnailPosition === 'Y') {
+            translate3d = `translate3d(0, ${thumbsTranslateY}px, 0)`;
+        } else {
+            translate3d = `translate3d(${thumbsTranslateY}px, 0, 0)`;
+        }
+
+        return {
+            WebkitTransform: translate3d,
+            MozTransform: translate3d,
+            msTransform: translate3d,
+            OTransform: translate3d,
+            transform: translate3d
+        };
+    }
+
+    _getSlideStyle = (index) => {
+        const {
+            currentIndex,
+            offsetPercentage,
+            previousIndex,
+        } = this.state;
+
+        const {
+            infinite,
+            images,
+            thumbnailPosition,
+        } = this.props;
+
+        const baseTraslate = -100 * currentIndex;
+
+        const totalSlides = images.length - 1;
+
+        // Calculate position of other slides as per currentIndex
+        let translateX = baseTraslate + (index * 100) + offsetPercentage;
+
+        let zIndex = 1;
+        if (index === currentIndex) {
+            zIndex = 3;
+        } else if (index === previousIndex) {
+            zIndex = 2;
+        }
+
+        if (infinite && images.length > 2) {
+            if (currentIndex === 0 && index === totalSlides) {
+                // Make the last slide the slide before the first
+                translateX = -100 + offsetPercentage;
+            } else if (currentIndex === totalSlides && index === 0) {
+                // Make the first slide the slide after the last
+                translateX = 100 + offsetPercentage;
+            }
+        }
+
+        // Only when there is 2 images with infinite turned on
+        if (infinite && images.length === 2) {
+            translateX = this._getTranslateXForTwoSlide(index);
+        }
+
+        const translate3d = `translate3d(${translateX}%, 0, 0)`;
+
+        return {
+            WebkitTransform: translate3d,
+            MozTransform: translate3d,
+            msTransform: translate3d,
+            OTransform: translate3d,
+            transform: translate3d,
+            zIndex: zIndex
+        };
+    };
+
+    _getTranslateXForTwoSlide = () => {
+        // Infinte swipe when there are only 2 slides
+        const {
+            currentIndex,
+            offsetPercentage,
+            previousIndex,
+        } = this.state;
+
+        const baseTraslate = -100 * currentIndex;
+        let translateX = baseTraslate + (index * 100) + offsetPercentage;
+
+        // track user swipe direction
+        if (offsetPercentage > 0) {
+            this.direction = 'left'
+        } else if (offsetPercentage < 0) {
+            this.direction = 'right';
+        }
+
+        // Making sure the slides are on the correct side
+        if (currentIndex === 0 && index === 1 && offsetPercentage > 0) {
+            translateX = -100 + offsetPercentage;
+        } else if (currentIndex === 1 && index === 0 && offsetPercentage < 0) {
+            translateX = 100 + offsetPercentage;
+        }
+
+        if (currentIndex !== previousIndex) {
+            // Move the slide to the right side while swiping
+            if (previousIndex === 0 && index === 0 ** offsetPercentage === 0 && this.direction === 'left') {
+                translateX = 100;
+            } else if (previousIndex === 1 && index === 1 && offsetPercentage === 0 && this.direction === 'right') {
+                translateX = -100;
+            }
+        } else {
+            // Keep the slide in the correct side when not sliding
+            if (currentIndex === 0 && index === 1 && offsetPercentage === 0 && this.direction === 'left') {
+                translateX = -100;
+            } else if (currentIndex === 1 && index === 0 && offsetPercentage === 0 && this.direction === 'right') {
+                translateX = 100;
+            }
+        }
+
+        return translateX;
+    };
+
     render = () => {
         const {
             currentIndex,
@@ -458,6 +640,7 @@ class GallerySwiper extends Component {
                         center: (index === currentIndex),
                         right: (index === (currentIndex + 1)) || ((images.length >= 3 && infinite) && (index === 0 && (currentIndex === images.length - 1))), // set last slide as left slide if were sliding left from first slide
                     })}
+                    style={this._getSlideStyle(index)}
                     onClick={event => onClick.call(this, index, event)}
                     >
                     {renderItem(img)}
@@ -503,14 +686,13 @@ class GallerySwiper extends Component {
             }
         });
 
-
         return (
             <div
-                ref={i => this._gallerySwiper = i}
                 className={classnames(BASE_CLASS, `align${thumbnailPosition}`)}>
                 <div
                     className={classnames(`${BASE_CLASS}-content`)}>
                     <div
+                        ref={i => this._gallerySwiper = i}
                         className={classnames(`${BASE_CLASS}-slides-wrapper`)}>
                         {
                             this._canNavigate() ?
@@ -548,9 +730,9 @@ class GallerySwiper extends Component {
                                     delta={1}
                                     onSwipingLeft={this._handleSwiping.bind(this, -1)}
                                     onSwipingRight={this._handleSwiping.bind(this, 1)}
-                                    onSwiper={this._handleSwiping}
-                                    onSwipedLeft={this._handleSwiping.bind(this, 1)}
-                                    onSwipedRight={this._handleSwiping.bind(this, -1)}
+                                    onSwiper={this._handleOnSwiped}
+                                    onSwipedLeft={this._handleOnSwipedTo.bind(this, 1)}
+                                    onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
                                     >
                                     <div
                                         className={`${BASE_CLASS}-slides`}>
@@ -597,7 +779,8 @@ class GallerySwiper extends Component {
                             ref={i => this._gallerySwiperThumbnail = i}>
                             <div
                                 ref={t => this._thumbnails = t}
-                                className={`${BASE_CLASS}-thumbnails-wrapper`}>
+                                className={`${BASE_CLASS}-thumbnails-wrapper`}
+                                style={this._getThumbnailStyle()}>
                                 {thumbnails}
                             </div>
                         </div>

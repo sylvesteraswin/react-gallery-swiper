@@ -1,6 +1,6 @@
 // This is to handle accessing event properties in an asynchronous way
 // https://facebook.github.io/react/docs/events.html#syntheticevent
-const throttle = (func, wait) => {
+function throttle(func, wait) {
     let context;
     let args;
     let result;
@@ -16,7 +16,7 @@ const throttle = (func, wait) => {
         }
     };
 
-    return () => {
+    return function() {
         let now = new Date().getTime();
         let remaining = wait - (now - previous);
         context = this;
@@ -26,7 +26,7 @@ const throttle = (func, wait) => {
                 clearTimeout(timeout);
             }
             previous = now;
-            result = func.appy(context, args);
+            result = func.apply(context, args);
             if (!timeout) {
                 context = args = null;
             }
@@ -37,9 +37,9 @@ const throttle = (func, wait) => {
     };
 };
 
-const debounceEventHandler = (...args) => {
+function debounceEventHandler(...args) {
     const throttled = throttle(...args);
-    return (event) => {
+    return function(event){
         if (event) {
             event.persist();
             return throttled(event);
