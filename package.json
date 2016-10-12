@@ -1,9 +1,9 @@
 {
   "name": "react-gallery-swiper",
-  "version": "0.1.4",
+  "version": "0.1.0",
   "description": "React Image Carousel, React Image Gallery",
-  "main": "dist/react-gallery-swiper",
-  "browser": "dist/react-gallery-swiper",
+  "main": "build/react-gallery-swiper",
+  "browser": "build/react-gallery-swiper",
   "devServer": {
     "host": "0.0.0.0",
     "port": 4000,
@@ -14,7 +14,7 @@
     "livereload": true
   },
   "scripts": {
-    "build": "NODE_ENV=production gulp dev"
+    "start": "NODE_ENV=production gulp dev"
   },
   "repository": {
     "type": "git",

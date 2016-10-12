@@ -265,11 +265,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            if (thumbnailPosition === 'Y') {
 	                _this.setState({
-	                    thumbsTranslateX: thumbsTranslate
+	                    thumbsTranslateY: thumbsTranslate
 	                });
 	            } else {
 	                _this.setState({
-	                    thumbsTranslateY: thumbsTranslate
+	                    thumbsTranslateX: thumbsTranslate
 	                });
 	            }
 	        }, _this._getThumbsTranslate = function (indexDifference) {
@@ -294,7 +294,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    }
 
 	                    // total scroll-y required to see the last thumbnail
-	                    var totalScrollY = _this._thumbnails.scrollHeight - thumbnailWidth;
+	                    var totalScrollY = _this._thumbnails.scrollHeight - thumbnailHeight;
 
 	                    // scroll-y required per index change
 	                    var perIndexScrollY = totalScrollY / (totalThumbnails - 1);
@@ -532,7 +532,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (thumbnailPosition === 'Y') {
 	                translate3d = 'translate3d(0, ' + thumbsTranslateY + 'px, 0)';
 	            } else {
-	                translate3d = 'translate3d(' + thumbsTranslateY + 'px, 0, 0)';
+	                translate3d = 'translate3d(' + thumbsTranslateX + 'px, 0, 0)';
 	            }
 
 	            return {
@@ -633,7 +633,9 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            return translateX;
 	        }, _this.render = function () {
-	            var currentIndex = _this.state.currentIndex;
+	            var _this$state8 = _this.state;
+	            var currentIndex = _this$state8.currentIndex;
+	            var galleryHeight = _this$state8.galleryHeight;
 	            var _this$props6 = _this.props;
 	            var images = _this$props6.images;
 	            var showThumbnails = _this$props6.showThumbnails;
@@ -721,9 +723,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return _react2.default.createElement('div', {
 	                className: (0, _classnames2.default)(BASE_CLASS, 'align' + thumbnailPosition) }, _react2.default.createElement('div', {
 	                className: (0, _classnames2.default)(BASE_CLASS + '-content') }, _react2.default.createElement('div', {
-	                ref: function ref(i) {
-	                    return _this._gallerySwiper = i;
-	                },
 	                className: (0, _classnames2.default)(BASE_CLASS + '-slides-wrapper') }, _this._canNavigate() ? [showNav && _react2.default.createElement('div', {
 	                className: BASE_CLASS + '-navigation-wrapper',
 	                key: 'navigation' }, _react2.default.createElement('button', {
@@ -738,6 +737,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                onClick: _this._slideRight
 	            })), disableSwipe ? _react2.default.createElement('div', {
 	                className: BASE_CLASS + '-slides',
+	                ref: function ref(i) {
+	                    return _this._gallerySwiper = i;
+	                },
 	                key: 'slides' }, slides) : _react2.default.createElement(_reactSwipeable2.default, {
 	                className: BASE_CLASS + '-swipe',
 	                key: 'swipeable',
@@ -749,7 +751,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                onSwipedLeft: _this._handleOnSwipedTo.bind(_this, 1),
 	                onSwipedRight: _this._handleOnSwipedTo.bind(_this, -1)
 	            }, _react2.default.createElement('div', {
+	                ref: function ref(i) {
+	                    return _this._gallerySwiper = i;
+	                },
 	                className: BASE_CLASS + '-slides' }, slides))] : _react2.default.createElement('div', {
+	                ref: function ref(i) {
+	                    return _this._gallerySwiper = i;
+	                },
 	                className: BASE_CLASS + '-slides' }, slides), showBullets && _react2.default.createElement('div', {
 	                className: BASE_CLASS + '-bullets' }, _react2.default.createElement('ul', {
 	                className: BASE_CLASS + '-bullets-container' }, bullets)), showIndex && _react2.default.createElement('div', {
@@ -757,7 +765,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                className: (0, _classnames2.default)(BASE_CLASS + '-thumbnails'),
 	                ref: function ref(i) {
 	                    return _this._gallerySwiperThumbnail = i;
-	                } }, _react2.default.createElement('div', {
+	                },
+	                style: thumbnailPosition === 'Y' ? {
+	                    height: galleryHeight
+	                } : {}
+	            }, _react2.default.createElement('div', {
 	                ref: function ref(t) {
 	                    return _this._thumbnails = t;
 	                },

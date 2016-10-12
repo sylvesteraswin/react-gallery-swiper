@@ -182,11 +182,11 @@ class GallerySwiper extends Component {
 
         if (thumbnailPosition === 'Y') {
             this.setState({
-                thumbsTranslateX: thumbsTranslate,
+                thumbsTranslateY: thumbsTranslate,
             });
         } else {
             this.setState({
-                thumbsTranslateY: thumbsTranslate,
+                thumbsTranslateX: thumbsTranslate,
             });
         }
     };
@@ -215,7 +215,7 @@ class GallerySwiper extends Component {
                 }
 
                 // total scroll-y required to see the last thumbnail
-                const totalScrollY = this._thumbnails.scrollHeight - thumbnailWidth;
+                const totalScrollY = this._thumbnails.scrollHeight - thumbnailHeight;
 
                 // scroll-y required per index change
                 const perIndexScrollY = totalScrollY / (totalThumbnails - 1);
@@ -532,7 +532,7 @@ class GallerySwiper extends Component {
         if (thumbnailPosition === 'Y') {
             translate3d = `translate3d(0, ${thumbsTranslateY}px, 0)`;
         } else {
-            translate3d = `translate3d(${thumbsTranslateY}px, 0, 0)`;
+            translate3d = `translate3d(${thumbsTranslateX}px, 0, 0)`;
         }
 
         return {
@@ -645,6 +645,7 @@ class GallerySwiper extends Component {
     render = () => {
         const {
             currentIndex,
+            galleryHeight,
         } = this.state;
 
         const {
@@ -736,7 +737,6 @@ class GallerySwiper extends Component {
                 <div
                     className={classnames(`${BASE_CLASS}-content`)}>
                     <div
-                        ref={i => this._gallerySwiper = i}
                         className={classnames(`${BASE_CLASS}-slides-wrapper`)}>
                         {
                             this._canNavigate() ?
@@ -763,6 +763,7 @@ class GallerySwiper extends Component {
                                 disableSwipe ?
                                 <div
                                     className={`${BASE_CLASS}-slides`}
+                                    ref={i => this._gallerySwiper = i}
                                     key='slides'>
                                     {slides}
                                 </div>
@@ -779,6 +780,7 @@ class GallerySwiper extends Component {
                                     onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
                                     >
                                     <div
+                                        ref={i => this._gallerySwiper = i}
                                         className={`${BASE_CLASS}-slides`}>
                                         {slides}
                                     </div>
@@ -786,6 +788,7 @@ class GallerySwiper extends Component {
                             ]
                             :
                             <div
+                                ref={i => this._gallerySwiper = i}
                                 className={`${BASE_CLASS}-slides`}>
                                 {slides}
                             </div>
@@ -820,7 +823,11 @@ class GallerySwiper extends Component {
                         showThumbnails &&
                         <div
                             className={classnames(`${BASE_CLASS}-thumbnails`)}
-                            ref={i => this._gallerySwiperThumbnail = i}>
+                            ref={i => this._gallerySwiperThumbnail = i}
+                            style={(thumbnailPosition === 'Y') ? {
+                                height: galleryHeight,
+                            } : {}}
+                            >
                             <div
                                 ref={t => this._thumbnails = t}
                                 className={`${BASE_CLASS}-thumbnails-wrapper`}
