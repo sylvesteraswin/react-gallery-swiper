@@ -296,6 +296,13 @@ class GallerySwiper extends Component {
     };
 
     _slideLeft = (event) => {
+        const {
+            onArrowClick
+        } = this.props;
+
+        if (onArrowClick && typeof onArrowClick === 'function') {
+            onArrowClick.call(this, 'left', event);
+        }
         this.goTo(this.state.currentIndex - 1, event);
     };
 
@@ -304,6 +311,13 @@ class GallerySwiper extends Component {
     };
 
     _slideRight = (event) => {
+        const {
+            onArrowClick
+        } = this.props;
+
+        if (onArrowClick && typeof onArrowClick === 'function') {
+            onArrowClick.call(this, 'left', event);
+        }
         this.goTo(this.state.currentIndex + 1, event);
     };
 

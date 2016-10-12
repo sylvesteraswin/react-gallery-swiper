@@ -53,7 +53,30 @@ class App extends React.Component {
 # Props
 
 * `images` (required) Array of objects.
+* `showNav`: Boolean, default `true`.
+* `lazyLoad`: Boolean, default `false`.
 * `infinite`: Boolean, default `true`.
+* `showIndex`: Boolean, default `false`.
+* `showBullets`: Boolean, default `false`.
+* `showThumbnails`: Boolean, default `true`.
+* `slideOnThumbnailsHover`: Boolean, default `false`.
+* `disableThumbnailScroll`: Boolean, default `false`.
+* `disableArrowKeys`: Boolean, default `false`.
+* `disableSwipe`: Boolean, default `false`.
+* `indexSeparator`: String, default `' : '`.
+* `startIndex`: Number, default `0`.
+* `thumbnailPosition`: String, default `X`.
+* `thumbnailHoverSlideDelay`: Number, default `300`.
+* `onSlide`: Function, `callback(currentIndex)`.
+* `onThumbnailHover`: Function, `callback(currentIndex, event)`.
+* `onThumbnailClick`: Function, `callback(currentIndex, event)`.
+* `onBulletClick`: Function, `callback(currentIndex, event)`.
+* `onArrowClick`: Function, `callback(type, event)`.
+* `onImageLoad`: Function, `callback(event)`.
+* `onThumbnailError`: Function, `callback(event)`.
+`The below 2 features are not completly built`
+* `renderItem`: Function, custom item rendering.
+* `renderThumb`: Function, custom item rendering of thumbnail.
 
 #Functions
 * `whereAmI()`: returns the current index.
