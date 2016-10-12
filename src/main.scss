@@ -1,4 +1,5 @@
 @import "mixins";
+@import "media";
 
 @mixin vendor-prefix($name, $value) {
   @each $vendor in ('-webkit-', '-moz-', '-ms-', '-o-', '') {
@@ -26,6 +27,21 @@ $base-class: zvui-gallery-swiper;
     }
     &-slides-wrapper {
         position: relative;
+        .#{$base-class} {
+            &-navigation {
+
+            }
+        }
+        &:hover {
+            .#{$base-class} {
+                &-navigation {
+                    @media #{$desktop} {
+                        opacity: 1;
+                        transition: opacity 0.2s ease 0s;
+                    }
+                }
+            }
+        }
     }
 
     &.alignY {
@@ -40,7 +56,14 @@ $base-class: zvui-gallery-swiper;
         cursor: pointer;
         position: absolute;
         z-index: 4;
-        
+        opacity: 0;
+        display: none;
+        @media #{$tablet} {
+            display: block;
+        }
+        @media #{$tablet-strict} {
+            opacity: .5;
+        }
         &::before {
             color: #fff;
             line-height: .7;
@@ -96,6 +119,7 @@ $base-class: zvui-gallery-swiper;
         position: absolute;
         top: 0;
         width: 100%;
+        transition: transform .3s ease-out;
         &.center {
             position: relative;
         }

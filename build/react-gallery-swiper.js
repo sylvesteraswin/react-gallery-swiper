@@ -98,6 +98,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    return obj && obj.__esModule ? obj : { default: obj };
 	}
 
+	function _defineProperty(obj, key, value) {
+	    if (key in obj) {
+	        Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true });
+	    } else {
+	        obj[key] = value;
+	    }return obj;
+	}
+
 	function _classCallCheck(instance, Constructor) {
 	    if (!(instance instanceof Constructor)) {
 	        throw new TypeError("Cannot call a class as a function");
@@ -364,25 +372,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            }
 	        }, _this._handleKeyDown = function (event) {
-	            var key = parseINt(event.keyCode || event.which || 0);
+	            var _keyfnMap;
 
-	            var keyfnMap = {
-	                LEFT_ARROW: function LEFT_ARROW() {
-	                    console.log('LEFT ARROW');
-	                    if (_this._canSlideLeft()) {
-	                        _this._slideLeft();
-	                    }
-	                },
-	                RIGHT_ARROW: function RIGHT_ARROW() {
-	                    console.log('RIGHT ARROW');
-	                    if (_this._canSlideRight()) {
-	                        _this._slideRight();
-	                    }
+	            var key = parseInt(event.keyCode || event.which || 0);
+
+	            var keyfnMap = (_keyfnMap = {}, _defineProperty(_keyfnMap, LEFT_ARROW, function () {
+	                if (_this._canSlideLeft()) {
+	                    _this._slideLeft();
 	                }
-	            };
+	            }), _defineProperty(_keyfnMap, RIGHT_ARROW, function () {
+	                if (_this._canSlideRight()) {
+	                    _this._slideRight();
+	                }
+	            }), _keyfnMap);
 
-	            if (keyfnMap[key]) {
-	                keyfnMap[key]();
+	            var fn = keyfnMap[key.toString()];
+
+	            if (fn && typeof fn === 'function') {
+	                fn();
 	            };
 	        }, _this._handleImageError = function (event) {
 	            var defaultImage = _this.props.defaultImage;

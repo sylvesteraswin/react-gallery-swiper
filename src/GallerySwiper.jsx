@@ -324,25 +324,25 @@ class GallerySwiper extends Component {
     };
 
     _handleKeyDown = (event) => {
-        const key = parseINt(event.keyCode || event.which || 0);
+        const key = parseInt(event.keyCode || event.which || 0);
 
         const keyfnMap = {
-            LEFT_ARROW: () => {
-                console.log('LEFT ARROW');
+            [LEFT_ARROW]: () => {
                 if (this._canSlideLeft()) {
                     this._slideLeft();
                 }
             },
-            RIGHT_ARROW: () => {
-                console.log('RIGHT ARROW');
+            [RIGHT_ARROW]: () => {
                 if (this._canSlideRight()) {
                     this._slideRight();
                 }
             },
         };
 
-        if (keyfnMap[key]) {
-            keyfnMap[key]();
+        const fn = keyfnMap[key.toString()];
+
+        if (fn && typeof fn === 'function') {
+            fn();
         };
     };
 
