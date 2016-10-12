@@ -191,6 +191,10 @@ $base-class: zvui-gallery-swiper;
     &-thumbnails {
         overflow: hidden;
         padding: 5px 0;
+        display: none;
+        @media #{$desktop} {
+            display: block;
+        }
         &-wrapper {
             cursor: pointer;
             text-align: center;

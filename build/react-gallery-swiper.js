@@ -443,17 +443,52 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            _this.goTo(index, event);
-	        }, _this._handleSwiping = function (index) {
-	            var currentIndex = _this.state.currentIndex;
+	        }, _this._handleSwiping = function (index, _, delta) {
+	            var galleryWidth = _this.state.galleryWidth;
 
-	            // if (this.)
+	            var offsetPercentage = index * (delta / galleryWidth * 100);
+	            _this.setState({
+	                offsetPercentage: offsetPercentage
+	            });
 	        }, _this._shouldSlideOnSwipe = function () {
-	            // const
+	            var _this$state4 = _this.state;
+	            var offsetPercentage = _this$state4.offsetPercentage;
+	            var isFlick = _this$state4.isFlick;
+
+	            var shouldSlide = Math.abs(offsetPercentage > 30 || isFlick);
+
+	            if (shouldSlide) {
+	                // Reset isFlick
+	                _this.setState({
+	                    isFlick: false
+	                });
+	            }
+	            return shouldSlide;
 	        }, _this._handleOnSwiped = function (event, x, y, isFlick) {
 	            _this.setState({
 	                isFlick: isFlick
 	            });
-	        }, _this._handleOnSwipedTo = function () {}, _this._renderItem = function (img) {
+	        }, _this._handleOnSwipedTo = function (index) {
+	            var slideTo = _this.state.currentIndex;
+
+	            setTimeout(function () {
+	                if (_this._shouldSlideOnSwipe()) {
+	                    slideTo += index;
+	                }
+
+	                if (index < 0) {
+	                    if (!_this._canSlideLeft()) {
+	                        slideTo = _this.state.currentIndex;
+	                    }
+	                } else {
+	                    if (!_this._canSlideRight()) {
+	                        slideTo = _this.state.currentIndex;
+	                    }
+	                }
+
+	                _this.goTo(slideTo);
+	            }, 0);
+	        }, _this._renderItem = function (img) {
 	            var _this$props4 = _this.props;
 	            var _this$props4$onImageE = _this$props4.onImageError;
 	            var onImageError = _this$props4$onImageE === undefined ? _this._handleImageError : _this$props4$onImageE;
@@ -488,9 +523,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	        }, _this._getThumbnailStyle = function () {
 	            var thumbnailPosition = _this.props.thumbnailPosition;
-	            var _this$state4 = _this.state;
-	            var thumbsTranslateX = _this$state4.thumbsTranslateX;
-	            var thumbsTranslateY = _this$state4.thumbsTranslateY;
+	            var _this$state5 = _this.state;
+	            var thumbsTranslateX = _this$state5.thumbsTranslateX;
+	            var thumbsTranslateY = _this$state5.thumbsTranslateY;
 
 	            var translate3d = void 0;
 
@@ -508,10 +543,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                transform: translate3d
 	            };
 	        }, _this._getSlideStyle = function (index) {
-	            var _this$state5 = _this.state;
-	            var currentIndex = _this$state5.currentIndex;
-	            var offsetPercentage = _this$state5.offsetPercentage;
-	            var previousIndex = _this$state5.previousIndex;
+	            var _this$state6 = _this.state;
+	            var currentIndex = _this$state6.currentIndex;
+	            var offsetPercentage = _this$state6.offsetPercentage;
+	            var previousIndex = _this$state6.previousIndex;
 	            var _this$props5 = _this.props;
 	            var infinite = _this$props5.infinite;
 	            var images = _this$props5.images;
@@ -558,10 +593,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	        }, _this._getTranslateXForTwoSlide = function () {
 	            // Infinte swipe when there are only 2 slides
-	            var _this$state6 = _this.state;
-	            var currentIndex = _this$state6.currentIndex;
-	            var offsetPercentage = _this$state6.offsetPercentage;
-	            var previousIndex = _this$state6.previousIndex;
+	            var _this$state7 = _this.state;
+	            var currentIndex = _this$state7.currentIndex;
+	            var offsetPercentage = _this$state7.offsetPercentage;
+	            var previousIndex = _this$state7.previousIndex;
 
 	            var baseTraslate = -100 * currentIndex;
 	            var translateX = baseTraslate + index * 100 + offsetPercentage;
@@ -710,7 +745,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                delta: 1,
 	                onSwipingLeft: _this._handleSwiping.bind(_this, -1),
 	                onSwipingRight: _this._handleSwiping.bind(_this, 1),
-	                onSwiper: _this._handleOnSwiped,
+	                onSwiped: _this._handleOnSwiped,
 	                onSwipedLeft: _this._handleOnSwipedTo.bind(_this, 1),
 	                onSwipedRight: _this._handleOnSwipedTo.bind(_this, -1)
 	            }, _react2.default.createElement('div', {

@@ -415,25 +415,63 @@ class GallerySwiper extends Component {
         this.goTo(index, event);
     };
 
-    _handleSwiping = (index) => {
+    _handleSwiping = (index, _, delta) => {
         const {
-            currentIndex
+            galleryWidth,
         } = this.state;
 
-        // if (this.)
+        const offsetPercentage = index * (delta / galleryWidth * 100);
+        this.setState({
+            offsetPercentage,
+        });
     };
 
     _shouldSlideOnSwipe = () => {
-        // const
+        const {
+            offsetPercentage,
+            isFlick,
+        } = this.state;
+
+        const shouldSlide = Math.abs(offsetPercentage > 30 || isFlick);
+
+        if (shouldSlide) {
+            // Reset isFlick
+            this.setState({
+                isFlick: false,
+            });
+        }
+        return shouldSlide;
     };
 
     _handleOnSwiped = (event, x, y, isFlick) => {
         this.setState({
-            isFlick
+            isFlick: isFlick
         });
     };
 
-    _handleOnSwipedTo = () => {};
+    _handleOnSwipedTo = (index) => {
+        let {
+            currentIndex: slideTo
+        } = this.state;
+
+        setTimeout(() => {
+            if (this._shouldSlideOnSwipe()) {
+                slideTo += index;
+            }
+
+            if (index < 0) {
+                if (!this._canSlideLeft()) {
+                    slideTo = this.state.currentIndex;
+                }
+            } else {
+                if (!this._canSlideRight()) {
+                    slideTo = this.state.currentIndex;
+                }
+            }
+
+            this.goTo(slideTo);
+        }, 0)
+    };
 
     _renderItem = (img) => {
         const {
@@ -736,7 +774,7 @@ class GallerySwiper extends Component {
                                     delta={1}
                                     onSwipingLeft={this._handleSwiping.bind(this, -1)}
                                     onSwipingRight={this._handleSwiping.bind(this, 1)}
-                                    onSwiper={this._handleOnSwiped}
+                                    onSwiped={this._handleOnSwiped}
                                     onSwipedLeft={this._handleOnSwipedTo.bind(this, 1)}
                                     onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
                                     >
