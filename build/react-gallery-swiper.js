@@ -403,16 +403,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var thumbnailHoverSlideDelay = _this$props3.thumbnailHoverSlideDelay;
 	            var onThumbnailHover = _this$props3.onThumbnailHover;
 
-	            _this.setState({
-	                hovering: true
-	            });
+	            if (sliderOnThumbnailHover) {
+	                _this.setState({
+	                    hovering: true
+	                });
 
-	            if (_this._thumbnailTimer) {
-	                clearTimeout(_this._thumbnailTimer);
+	                if (_this._thumbnailTimer) {
+	                    clearTimeout(_this._thumbnailTimer);
+	                }
+	                _this._thumbnailTimer = setTimeout(function () {
+	                    _this.goTo(index);
+	                }, thumbnailHoverSlideDelay);
 	            }
-	            _this._thumbnailTimer = setTimeout(function () {
-	                _this.goTo(index);
-	            }, thumbnailHoverSlideDelay);
 
 	            if (onThumbnailHover && typeof onThumbnailHover === 'function') {
 	                onThumbnailHover.call(_this, index, event);
@@ -447,7 +449,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // if (this.)
 	        }, _this._shouldSlideOnSwipe = function () {
 	            // const
-	        }, _this._handleOnSwiped = function () {}, _this._handleOnSwipedTo = function () {}, _this._renderItem = function (img) {
+	        }, _this._handleOnSwiped = function (event, x, y, isFlick) {
+	            _this.setState({
+	                isFlick: isFlick
+	            });
+	        }, _this._handleOnSwipedTo = function () {}, _this._renderItem = function (img) {
 	            var _this$props4 = _this.props;
 	            var _this$props4$onImageE = _this$props4.onImageError;
 	            var onImageError = _this$props4$onImageE === undefined ? _this._handleImageError : _this$props4$onImageE;

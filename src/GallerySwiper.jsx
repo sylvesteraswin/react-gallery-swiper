@@ -363,16 +363,18 @@ class GallerySwiper extends Component {
             onThumbnailHover,
         } = this.props;
 
-        this.setState({
-            hovering: true,
-        });
+        if (sliderOnThumbnailHover) {
+            this.setState({
+                hovering: true,
+            });
 
-        if (this._thumbnailTimer) {
-            clearTimeout(this._thumbnailTimer);
+            if (this._thumbnailTimer) {
+                clearTimeout(this._thumbnailTimer);
+            }
+            this._thumbnailTimer = setTimeout(() => {
+                this.goTo(index);
+            }, thumbnailHoverSlideDelay);
         }
-        this._thumbnailTimer = setTimeout(() => {
-            this.goTo(index);
-        }, thumbnailHoverSlideDelay);
 
         if (onThumbnailHover && typeof onThumbnailHover === 'function') {
             onThumbnailHover.call(this, index, event);
@@ -425,7 +427,11 @@ class GallerySwiper extends Component {
         // const
     };
 
-    _handleOnSwiped = () => {};
+    _handleOnSwiped = (event, x, y, isFlick) => {
+        this.setState({
+            isFlick
+        });
+    };
 
     _handleOnSwipedTo = () => {};
 
