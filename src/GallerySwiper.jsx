@@ -1,7 +1,9 @@
+/*eslint-disable no-unused-vars*/
 import React, { Component, PropTypes } from 'react';
-import classnames from 'classnames';
 import Swipeable from 'react-swipeable';
 import LazyLoad from 'react-lazyload';
+/*eslint-enable no-unused-vars*/
+import classnames from 'classnames';
 
 import addEvent from './utils/add-event-listener';
 import removeEvent from './utils/remove-event-listener';
@@ -38,16 +40,16 @@ class GallerySwiper extends Component {
             if (newDisableArrowKeys) {
                 const {
                     handleKeyDown,
-                } = this.state.events
+                } = this.state.events;
 
-                if (keyDown) {
-                    removeEvent(keyDown);
+                if (handleKeyDown) {
+                    removeEvent(handleKeyDown);
                 }
             } else {
                 this.setState({
                     events: {
                         handleKeyDown: addEvent(window, 'keydown', this._handleKeyDown, this),
-                    }
+                    },
                 });
             }
         }
@@ -91,7 +93,7 @@ class GallerySwiper extends Component {
 
     componentWillMount = () => {
         const {
-            startIndex
+            startIndex,
         } = this.props;
 
         this.setState({
@@ -107,19 +109,19 @@ class GallerySwiper extends Component {
         setTimeout(() => this._handleResize(), 500);
 
         const {
-            disableArrowKeys
+            disableArrowKeys,
         } = this.props;
 
         if (!disableArrowKeys) {
             this.setState({
                 events: Object.assign({}, this.state.events, {
                     handleKeyDown: addEvent(window, 'keydown', this._handleKeyDown, this),
-                })
+                }),
             }, () => {
                 this.setState({
                     events: Object.assign({}, this.state.events, {
                         handleResize: addEvent(window, 'resize', this._handleResize, this),
-                    })
+                    }),
                 });
             });
         }
@@ -129,7 +131,7 @@ class GallerySwiper extends Component {
 
     componentWillUnMount = () => {
         const {
-            disableArrowKeys
+            disableArrowKeys,
         } = this.props;
 
         const {
@@ -150,7 +152,7 @@ class GallerySwiper extends Component {
         }
 
         const {
-            images
+            images,
         } = this.props;
 
         const {
@@ -245,7 +247,7 @@ class GallerySwiper extends Component {
         } = this.state;
 
         const {
-            currentIndex
+            currentIndex,
         } = prevState;
 
         const {
@@ -291,13 +293,11 @@ class GallerySwiper extends Component {
 
     _canNavigate = () => (this.props.images.length >= 2);
 
-    _canSlideLeft = () => {
-        return this.props.infinite || this.state.currentIndex > 0
-    };
+    _canSlideLeft = () => (this.props.infinite || this.state.currentIndex > 0);
 
     _slideLeft = (event) => {
         const {
-            onArrowClick
+            onArrowClick,
         } = this.props;
 
         if (onArrowClick && typeof onArrowClick === 'function') {
@@ -306,13 +306,11 @@ class GallerySwiper extends Component {
         this.goTo(this.state.currentIndex - 1, event);
     };
 
-    _canSlideRight = () => {
-        return this.props.infinite || this.state.currentIndex < this.props.images.length - 1
-    };
+    _canSlideRight = () => (this.props.infinite || this.state.currentIndex < this.props.images.length - 1);
 
     _slideRight = (event) => {
         const {
-            onArrowClick
+            onArrowClick,
         } = this.props;
 
         if (onArrowClick && typeof onArrowClick === 'function') {
@@ -395,7 +393,7 @@ class GallerySwiper extends Component {
         }
     };
 
-    _handleMouseLeaveThumbnail = (index, event) => {
+    _handleMouseLeaveThumbnail = () => {
         if (this._thumbnailTimer) {
             clearTimeout(this._thumbnailTimer);
         }
@@ -407,7 +405,7 @@ class GallerySwiper extends Component {
 
     _handleThumbnailClick = (index, event) => {
         const {
-            onThumbnailClick
+            onThumbnailClick,
         } = this.props;
 
         if (onThumbnailClick && typeof onThumbnailClick === 'function') {
@@ -419,7 +417,7 @@ class GallerySwiper extends Component {
 
     _handleBulletClick = (index, event) => {
         const {
-            onBulletClick
+            onBulletClick,
         } = this.props;
 
         if (onBulletClick && typeof onBulletClick === 'function') {
@@ -459,13 +457,13 @@ class GallerySwiper extends Component {
 
     _handleOnSwiped = (event, x, y, isFlick) => {
         this.setState({
-            isFlick: isFlick
+            isFlick: isFlick,
         });
     };
 
     _handleOnSwipedTo = (index) => {
         let {
-            currentIndex: slideTo
+            currentIndex: slideTo,
         } = this.state;
 
         setTimeout(() => {
@@ -484,7 +482,7 @@ class GallerySwiper extends Component {
             }
 
             this.goTo(slideTo);
-        }, 0)
+        }, 0);
     };
 
     _renderItem = (img) => {
@@ -515,7 +513,7 @@ class GallerySwiper extends Component {
         );
     };
 
-    _renderThumb = (img, index) => {
+    _renderThumb = (img) => {
         const {
             thumbnail = '',
             thumbnailAlt = '',
@@ -554,7 +552,7 @@ class GallerySwiper extends Component {
             MozTransform: translate3d,
             msTransform: translate3d,
             OTransform: translate3d,
-            transform: translate3d
+            transform: translate3d,
         };
     }
 
@@ -568,7 +566,6 @@ class GallerySwiper extends Component {
         const {
             infinite,
             images,
-            thumbnailPosition,
         } = this.props;
 
         const baseTraslate = -100 * currentIndex;
@@ -608,7 +605,7 @@ class GallerySwiper extends Component {
             msTransform: translate3d,
             OTransform: translate3d,
             transform: translate3d,
-            zIndex: zIndex
+            zIndex: zIndex,
         };
     };
 
@@ -625,7 +622,7 @@ class GallerySwiper extends Component {
 
         // track user swipe direction
         if (offsetPercentage > 0) {
-            this.direction = 'left'
+            this.direction = 'left';
         } else if (offsetPercentage < 0) {
             this.direction = 'right';
         }
@@ -695,9 +692,11 @@ class GallerySwiper extends Component {
                 <div
                     key={index}
                     className={classnames(`${BASE_CLASS}-slide`, originalClass, {
-                        left: (index === (currentIndex - 1)) || ((images.length >= 3 && infinite) && ((index === images.length - 1) && (currentIndex === 0))), // set first slide as right slide if were sliding right from last slide
+                        // set first slide as right slide if were sliding right from last slide
+                        left: (index === (currentIndex - 1)) || ((images.length >= 3 && infinite) && ((index === images.length - 1) && (currentIndex === 0))),
                         center: (index === currentIndex),
-                        right: (index === (currentIndex + 1)) || ((images.length >= 3 && infinite) && (index === 0 && (currentIndex === images.length - 1))), // set last slide as left slide if were sliding left from first slide
+                        // set last slide as left slide if were sliding left from first slide
+                        right: (index === (currentIndex + 1)) || ((images.length >= 3 && infinite) && (index === 0 && (currentIndex === images.length - 1))),
                     })}
                     style={this._getSlideStyle(index)}
                     onClick={event => onClick.call(this, index, event)}
@@ -754,52 +753,52 @@ class GallerySwiper extends Component {
                         className={classnames(`${BASE_CLASS}-slides-wrapper`)}>
                         {
                             this._canNavigate() ?
-                            [
-                                showNav &&
-                                <div
-                                    className={`${BASE_CLASS}-navigation-wrapper`}
-                                    key='navigation'>
-                                    <button
-                                        className={`${BASE_CLASS}-navigation left`}
-                                        disabled={!this._canSlideLeft()}
-                                        onTouchStart={this._slideLeft}
-                                        onClick={this._slideLeft}
-                                        />
-
-                                    <button
-                                        className={`${BASE_CLASS}-navigation right`}
-                                        disabled={!this._canSlideRight()}
-                                        onTouchStart={this._slideRight}
-                                        onClick={this._slideRight}
-                                        />
-                                </div>,
-
-                                disableSwipe ?
-                                <div
-                                    className={`${BASE_CLASS}-slides`}
-                                    ref={i => this._gallerySwiper = i}
-                                    key='slides'>
-                                    {slides}
-                                </div>
-                                :
-                                <Swipeable
-                                    className={`${BASE_CLASS}-swipe`}
-                                    key={'swipeable'}
-                                    flickThreshold={.2}
-                                    delta={1}
-                                    onSwipingLeft={this._handleSwiping.bind(this, -1)}
-                                    onSwipingRight={this._handleSwiping.bind(this, 1)}
-                                    onSwiped={this._handleOnSwiped}
-                                    onSwipedLeft={this._handleOnSwipedTo.bind(this, 1)}
-                                    onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
-                                    >
+                                [
+                                    showNav &&
                                     <div
+                                        className={`${BASE_CLASS}-navigation-wrapper`}
+                                        key='navigation'>
+                                        <button
+                                            className={`${BASE_CLASS}-navigation left`}
+                                            disabled={!this._canSlideLeft()}
+                                            onTouchStart={this._slideLeft}
+                                            onClick={this._slideLeft}
+                                            />
+
+                                        <button
+                                            className={`${BASE_CLASS}-navigation right`}
+                                            disabled={!this._canSlideRight()}
+                                            onTouchStart={this._slideRight}
+                                            onClick={this._slideRight}
+                                            />
+                                    </div>,
+
+                                    disableSwipe ?
+                                    <div
+                                        className={`${BASE_CLASS}-slides`}
                                         ref={i => this._gallerySwiper = i}
-                                        className={`${BASE_CLASS}-slides`}>
+                                        key='slides'>
                                         {slides}
                                     </div>
-                                </Swipeable>
-                            ]
+                                    :
+                                    <Swipeable
+                                        className={`${BASE_CLASS}-swipe`}
+                                        key={'swipeable'}
+                                        flickThreshold={.2}
+                                        delta={1}
+                                        onSwipingLeft={this._handleSwiping.bind(this, -1)}
+                                        onSwipingRight={this._handleSwiping.bind(this, 1)}
+                                        onSwiped={this._handleOnSwiped}
+                                        onSwipedLeft={this._handleOnSwipedTo.bind(this, 1)}
+                                        onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
+                                        >
+                                        <div
+                                            ref={i => this._gallerySwiper = i}
+                                            className={`${BASE_CLASS}-slides`}>
+                                            {slides}
+                                        </div>
+                                    </Swipeable>,
+                                ]
                             :
                             <div
                                 ref={i => this._gallerySwiper = i}

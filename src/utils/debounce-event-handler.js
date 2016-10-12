@@ -17,8 +17,8 @@ function throttle(func, wait) {
     };
 
     return function() {
-        let now = new Date().getTime();
-        let remaining = wait - (now - previous);
+        const now = new Date().getTime();
+        const remaining = wait - (now - previous);
         context = this;
         args = arguments;
         if (remaining <= 0 || remaining > wait) {

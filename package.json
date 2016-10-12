@@ -8,13 +8,12 @@
     "host": "0.0.0.0",
     "port": 4000,
     "root": [
-      "example",
-      "build"
+      "example"
     ],
     "livereload": true
   },
   "scripts": {
-    "start": "NODE_ENV=production gulp dev"
+    "start": "NODE_ENV=production gulp"
   },
   "repository": {
     "type": "git",

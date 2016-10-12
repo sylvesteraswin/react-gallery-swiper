@@ -26,14 +26,14 @@ const addEvent = (elem, event, fn, binder) => {
         return {
             elem,
             handler: listenHandler,
-            event
+            event,
         };
     } else {
         elem.attachEvent('on' + event, attachHandler);
         return {
             elem,
             handler: attachHander,
-            event
+            event,
         };
     }
 };

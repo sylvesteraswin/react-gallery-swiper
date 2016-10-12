@@ -14,4 +14,4 @@ gulp.task('watch', () => {
 });
 
 
-gulp.task('dev', ['watch', 'build', 'server']);
+gulp.task('default', ['watch', 'build', 'server']);

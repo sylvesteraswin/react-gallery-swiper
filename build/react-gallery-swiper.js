@@ -7,7 +7,7 @@
 		exports["GallerySwiper"] = factory(require("react"), require("react-dom"));
 	else
 		root["GallerySwiper"] = factory(root["React"], root["ReactDOM"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_7__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_6__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -70,17 +70,17 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _classnames = __webpack_require__(3);
-
-	var _classnames2 = _interopRequireDefault(_classnames);
-
-	var _reactSwipeable = __webpack_require__(4);
+	var _reactSwipeable = __webpack_require__(3);
 
 	var _reactSwipeable2 = _interopRequireDefault(_reactSwipeable);
 
-	var _reactLazyload = __webpack_require__(5);
+	var _reactLazyload = __webpack_require__(4);
 
 	var _reactLazyload2 = _interopRequireDefault(_reactLazyload);
+
+	var _classnames = __webpack_require__(12);
+
+	var _classnames2 = _interopRequireDefault(_classnames);
 
 	var _addEventListener = __webpack_require__(13);
 
@@ -122,7 +122,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (typeof superClass !== "function" && superClass !== null) {
 	        throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof(superClass)));
 	    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-	}
+	} /*eslint-disable no-unused-vars*/
+
+	/*eslint-enable no-unused-vars*/
 
 	var BASE_CLASS = 'zvui-gallery-swiper';
 	var LEFT_ARROW = 37;
@@ -161,8 +163,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                if (newDisableArrowKeys) {
 	                    var handleKeyDown = _this.state.events.handleKeyDown;
 
-	                    if (keyDown) {
-	                        (0, _removeEventListener2.default)(keyDown);
+	                    if (handleKeyDown) {
+	                        (0, _removeEventListener2.default)(handleKeyDown);
 	                    }
 	                } else {
 	                    _this.setState({
@@ -429,7 +431,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            if (onThumbnailHover && typeof onThumbnailHover === 'function') {
 	                onThumbnailHover.call(_this, index, event);
 	            }
-	        }, _this._handleMouseLeaveThumbnail = function (index, event) {
+	        }, _this._handleMouseLeaveThumbnail = function () {
 	            if (_this._thumbnailTimer) {
 	                clearTimeout(_this._thumbnailTimer);
 	            }
@@ -518,7 +520,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                onLoad: onImageLoad,
 	                onError: onImageError
 	            }));
-	        }, _this._renderThumb = function (img, index) {
+	        }, _this._renderThumb = function (img) {
 	            var _img$thumbnail = img.thumbnail;
 	            var thumbnail = _img$thumbnail === undefined ? '' : _img$thumbnail;
 	            var _img$thumbnailAlt = img.thumbnailAlt;
@@ -560,7 +562,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this$props5 = _this.props;
 	            var infinite = _this$props5.infinite;
 	            var images = _this$props5.images;
-	            var thumbnailPosition = _this$props5.thumbnailPosition;
 
 	            var baseTraslate = -100 * currentIndex;
 
@@ -680,9 +681,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var slide = _react2.default.createElement('div', {
 	                    key: index,
 	                    className: (0, _classnames2.default)(BASE_CLASS + '-slide', originalClass, {
-	                        left: index === currentIndex - 1 || images.length >= 3 && infinite && index === images.length - 1 && currentIndex === 0, // set first slide as right slide if were sliding right from last slide
+	                        // set first slide as right slide if were sliding right from last slide
+	                        left: index === currentIndex - 1 || images.length >= 3 && infinite && index === images.length - 1 && currentIndex === 0,
 	                        center: index === currentIndex,
-	                        right: index === currentIndex + 1 || images.length >= 3 && infinite && index === 0 && currentIndex === images.length - 1 }),
+	                        // set last slide as left slide if were sliding left from first slide
+	                        right: index === currentIndex + 1 || images.length >= 3 && infinite && index === 0 && currentIndex === images.length - 1
+	                    }),
 	                    style: _this._getSlideStyle(index),
 	                    onClick: function onClick(event) {
 	                        return _onClick.call(_this, index, event);
@@ -847,60 +851,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 3 */
-/***/ function(module, exports, __webpack_require__) {
-
-	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
-	  Copyright (c) 2016 Jed Watson.
-	  Licensed under the MIT License (MIT), see
-	  http://jedwatson.github.io/classnames
-	*/
-	/* global define */
-
-	(function () {
-		'use strict';
-
-		var hasOwn = {}.hasOwnProperty;
-
-		function classNames () {
-			var classes = [];
-
-			for (var i = 0; i < arguments.length; i++) {
-				var arg = arguments[i];
-				if (!arg) continue;
-
-				var argType = typeof arg;
-
-				if (argType === 'string' || argType === 'number') {
-					classes.push(arg);
-				} else if (Array.isArray(arg)) {
-					classes.push(classNames.apply(null, arg));
-				} else if (argType === 'object') {
-					for (var key in arg) {
-						if (hasOwn.call(arg, key) && arg[key]) {
-							classes.push(key);
-						}
-					}
-				}
-			}
-
-			return classes.join(' ');
-		}
-
-		if (typeof module !== 'undefined' && module.exports) {
-			module.exports = classNames;
-		} else if (true) {
-			// register as 'classnames', consistent with npm package name
-			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
-				return classNames;
-			}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
-		} else {
-			window.classNames = classNames;
-		}
-	}());
-
-
-/***/ },
-/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1096,7 +1046,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	module.exports = Swipeable;
 
 /***/ },
-/* 5 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -1112,25 +1062,25 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _reactDom = __webpack_require__(7);
+	var _reactDom = __webpack_require__(6);
 
 	var _reactDom2 = _interopRequireDefault(_reactDom);
 
-	var _event = __webpack_require__(8);
+	var _event = __webpack_require__(7);
 
-	var _scrollParent = __webpack_require__(9);
+	var _scrollParent = __webpack_require__(8);
 
 	var _scrollParent2 = _interopRequireDefault(_scrollParent);
 
-	var _debounce = __webpack_require__(10);
+	var _debounce = __webpack_require__(9);
 
 	var _debounce2 = _interopRequireDefault(_debounce);
 
-	var _throttle = __webpack_require__(11);
+	var _throttle = __webpack_require__(10);
 
 	var _throttle2 = _interopRequireDefault(_throttle);
 
-	var _decorator = __webpack_require__(12);
+	var _decorator = __webpack_require__(11);
 
 	var _decorator2 = _interopRequireDefault(_decorator);
 
@@ -1413,10 +1363,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	var lazyload = exports.lazyload = _decorator2.default;
 	exports.default = LazyLoad;
 	exports.forceCheck = lazyLoadHandler;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6)))
+	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
 
 /***/ },
-/* 6 */
+/* 5 */
 /***/ function(module, exports) {
 
 	// shim for using process in browser
@@ -1602,13 +1552,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 7 */
+/* 6 */
 /***/ function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_7__;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_6__;
 
 /***/ },
-/* 8 */
+/* 7 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1637,7 +1587,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1684,7 +1634,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 /***/ },
-/* 10 */
+/* 9 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1736,7 +1686,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 11 */
+/* 10 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -1769,7 +1719,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	}
 
 /***/ },
-/* 12 */
+/* 11 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1780,7 +1730,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-	var _index = __webpack_require__(5);
+	var _index = __webpack_require__(4);
 
 	var _index2 = _interopRequireDefault(_index);
 
@@ -1830,6 +1780,60 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }(_react.Component);
 	  };
 	};
+
+/***/ },
+/* 12 */
+/***/ function(module, exports, __webpack_require__) {
+
+	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
+	  Copyright (c) 2016 Jed Watson.
+	  Licensed under the MIT License (MIT), see
+	  http://jedwatson.github.io/classnames
+	*/
+	/* global define */
+
+	(function () {
+		'use strict';
+
+		var hasOwn = {}.hasOwnProperty;
+
+		function classNames () {
+			var classes = [];
+
+			for (var i = 0; i < arguments.length; i++) {
+				var arg = arguments[i];
+				if (!arg) continue;
+
+				var argType = typeof arg;
+
+				if (argType === 'string' || argType === 'number') {
+					classes.push(arg);
+				} else if (Array.isArray(arg)) {
+					classes.push(classNames.apply(null, arg));
+				} else if (argType === 'object') {
+					for (var key in arg) {
+						if (hasOwn.call(arg, key) && arg[key]) {
+							classes.push(key);
+						}
+					}
+				}
+			}
+
+			return classes.join(' ');
+		}
+
+		if (typeof module !== 'undefined' && module.exports) {
+			module.exports = classNames;
+		} else if (true) {
+			// register as 'classnames', consistent with npm package name
+			!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function () {
+				return classNames;
+			}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__), __WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
+		} else {
+			window.classNames = classNames;
+		}
+	}());
+
 
 /***/ },
 /* 13 */
