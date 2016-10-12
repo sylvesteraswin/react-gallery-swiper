@@ -37,8 +37,6 @@ class App extends Component {
                 <GallerySwiper
                     ref={i => this._gallerySwiper = i}
                     images={images}
-                    showBullets={true}
-                    showIndex={true}
                     onClick={this._onImageClick}
                     onThumbnailHover={this._onThumbnailHover}
                     onThumbnailClick={this._onThumbnailClick}
