@@ -73,6 +73,7 @@ class App extends Component {
                     onClick={this._onImageClick}
                     onThumbnailHover={this._onThumbnailHover}
                     onThumbnailClick={this._onThumbnailClick}
+                    thumbnailPosition='Y'
                     />
             </section>
         );
