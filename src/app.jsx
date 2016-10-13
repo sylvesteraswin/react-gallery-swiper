@@ -14,9 +14,9 @@ class App extends Component {
         console.log(index, event);
     };
 
-    _onThumbnailClick = (index, event) => {
-        console.log(this);
-        console.log(index, event);
+    _onArrowClick = (type, index, event) => {
+        // console.log(this);
+        console.log(type, index, event);
     };
 
     render = () => {
@@ -72,7 +72,7 @@ class App extends Component {
                     images={images}
                     onClick={this._onImageClick}
                     onThumbnailHover={this._onThumbnailHover}
-                    onThumbnailClick={this._onThumbnailClick}
+                    onArrowClick={this._onArrowClick}
                     thumbnailPosition='Y'
                     />
             </section>
