@@ -62,11 +62,13 @@ class GallerySwiper extends Component {
 
         const {
             thumbnailWidth,
+            thumbnailHeight,
             currentIndex,
         } = prevState;
 
         const {
             thumbnailWidth: stateThumbnailWidth,
+            thumbnailHeight: stateThumbnailHeight,
             currentIndex: stateCurrentIndex,
         } = this.state;
 
@@ -75,10 +77,10 @@ class GallerySwiper extends Component {
             onSlide,
         } = this.props;
 
-        if ((thumbnailWidth !== stateThumbnailWidth) || (showThumbnails !== propsShowthumbnailWidth)) {
+        if ((thumbnailWidth !== stateThumbnailWidth) || (thumbnailHeight !== stateThumbnailHeight) || (showThumbnails !== propsShowthumbnailWidth)) {
             // Change thumbnail width container when thumbnail width id adjusted
             this._setThumbsTranslate(
-                this._getThumbsTranslate(((stateCurrentIndex > 0) ? 1 : 0) * stateCurrentIndex)
+                -this._getThumbsTranslate(((stateCurrentIndex > 0) ? 1 : 0) * stateCurrentIndex)
             );
         }
 
@@ -106,7 +108,9 @@ class GallerySwiper extends Component {
 
     componentDidMount = () => {
         // delay the event handler to make sure we get the correct image offset width and height
-        setTimeout(() => this._handleResize(), 500);
+        setTimeout(() => {
+            this._handleResize();
+        }, 500);
 
         const {
             disableArrowKeys,
@@ -320,19 +324,22 @@ class GallerySwiper extends Component {
     };
 
     _handleResize = () => {
-        if (this._gallerySwiper) {
-            this.setState({
-                galleryWidth: this._gallerySwiper.offsetWidth,
-                galleryHeight: this._gallerySwiper.offsetHeight,
-            });
-        }
+        clearTimeout(this.handleResizeTimer);
+        this.handleResizeTimer = setTimeout(() => {
+            if (this._gallerySwiper) {
+                this.setState({
+                    galleryWidth: this._gallerySwiper.offsetWidth,
+                    galleryHeight: this._gallerySwiper.offsetHeight,
+                });
+            }
 
-        if (this._gallerySwiperThumbnail) {
-            this.setState({
-                thumbnailWidth: this._gallerySwiperThumbnail.offsetWidth,
-                thumbnailHeight: this._gallerySwiperThumbnail.offsetHeight,
-            });
-        }
+            if (this._gallerySwiperThumbnail) {
+                this.setState({
+                    thumbnailWidth: this._gallerySwiperThumbnail.offsetWidth,
+                    thumbnailHeight: this._gallerySwiperThumbnail.offsetHeight,
+                });
+            }
+        }, 100);
     };
 
     _handleKeyDown = (event) => {

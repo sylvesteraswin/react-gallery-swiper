@@ -177,17 +177,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this.componentDidUpdate = function (prevProps, prevState) {
 	            var showThumbnails = prevProps.showThumbnails;
 	            var thumbnailWidth = prevState.thumbnailWidth;
+	            var thumbnailHeight = prevState.thumbnailHeight;
 	            var currentIndex = prevState.currentIndex;
 	            var _this$state = _this.state;
 	            var stateThumbnailWidth = _this$state.thumbnailWidth;
+	            var stateThumbnailHeight = _this$state.thumbnailHeight;
 	            var stateCurrentIndex = _this$state.currentIndex;
 	            var _this$props = _this.props;
 	            var propsShowthumbnailWidth = _this$props.showThumbnails;
 	            var onSlide = _this$props.onSlide;
 
-	            if (thumbnailWidth !== stateThumbnailWidth || showThumbnails !== propsShowthumbnailWidth) {
+	            if (thumbnailWidth !== stateThumbnailWidth || thumbnailHeight !== stateThumbnailHeight || showThumbnails !== propsShowthumbnailWidth) {
 	                // Change thumbnail width container when thumbnail width id adjusted
-	                _this._setThumbsTranslate(_this._getThumbsTranslate((stateCurrentIndex > 0 ? 1 : 0) * stateCurrentIndex));
+	                _this._setThumbsTranslate(-_this._getThumbsTranslate((stateCurrentIndex > 0 ? 1 : 0) * stateCurrentIndex));
 	            }
 
 	            if (currentIndex !== stateCurrentIndex) {
@@ -209,7 +211,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this.componentDidMount = function () {
 	            // delay the event handler to make sure we get the correct image offset width and height
 	            setTimeout(function () {
-	                return _this._handleResize();
+	                _this._handleResize();
 	            }, 500);
 
 	            var disableArrowKeys = _this.props.disableArrowKeys;
@@ -370,19 +372,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	            _this.goTo(_this.state.currentIndex + 1, event);
 	        }, _this._handleResize = function () {
-	            if (_this._gallerySwiper) {
-	                _this.setState({
-	                    galleryWidth: _this._gallerySwiper.offsetWidth,
-	                    galleryHeight: _this._gallerySwiper.offsetHeight
-	                });
-	            }
+	            clearTimeout(_this.handleResizeTimer);
+	            _this.handleResizeTimer = setTimeout(function () {
+	                if (_this._gallerySwiper) {
+	                    _this.setState({
+	                        galleryWidth: _this._gallerySwiper.offsetWidth,
+	                        galleryHeight: _this._gallerySwiper.offsetHeight
+	                    });
+	                }
 
-	            if (_this._gallerySwiperThumbnail) {
-	                _this.setState({
-	                    thumbnailWidth: _this._gallerySwiperThumbnail.offsetWidth,
-	                    thumbnailHeight: _this._gallerySwiperThumbnail.offsetHeight
-	                });
-	            }
+	                if (_this._gallerySwiperThumbnail) {
+	                    _this.setState({
+	                        thumbnailWidth: _this._gallerySwiperThumbnail.offsetWidth,
+	                        thumbnailHeight: _this._gallerySwiperThumbnail.offsetHeight
+	                    });
+	                }
+	            }, 100);
 	        }, _this._handleKeyDown = function (event) {
 	            var _keyfnMap;
 

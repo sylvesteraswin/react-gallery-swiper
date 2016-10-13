@@ -209,6 +209,7 @@ $base-class: zvui-gallery-swiper;
             border: 2px solid transparent;
             transition: border .3s ease-out;
             width: 100%;
+            max-width: 80px;
             opacity: .8;
         }
 
@@ -225,7 +226,7 @@ $base-class: zvui-gallery-swiper;
             &-thumbnails {
                 order: 1;
                 padding: 0 5px;
-                flex-basis: 10em;
+                flex-basis: 8em;
             }
             &-thumbnail {
                 display: block;
