@@ -176,6 +176,9 @@ class GallerySwiper extends Component {
             previousIndex,
             currentIndex,
             offsetPercentage: 0,
+            style: {
+                transition: 'transform .3s ease-out',
+            },
         });
     };
 
@@ -664,6 +667,7 @@ class GallerySwiper extends Component {
         const {
             currentIndex,
             galleryHeight,
+            style: slideTransformStyle = {},
         } = this.state;
 
         const {
@@ -705,7 +709,7 @@ class GallerySwiper extends Component {
                         // set last slide as left slide if were sliding left from first slide
                         right: (index === (currentIndex + 1)) || ((images.length >= 3 && infinite) && (index === 0 && (currentIndex === images.length - 1))),
                     })}
-                    style={this._getSlideStyle(index)}
+                    style={Object.assign(this._getSlideStyle(index), slideTransformStyle)}
                     onClick={event => onClick.call(this, index, event)}
                     >
                     {renderItem(img)}

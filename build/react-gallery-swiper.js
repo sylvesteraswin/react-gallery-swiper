@@ -260,7 +260,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _this.setState({
 	                previousIndex: previousIndex,
 	                currentIndex: currentIndex,
-	                offsetPercentage: 0
+	                offsetPercentage: 0,
+	                style: {
+	                    transition: 'transform .3s ease-out'
+	                }
 	            });
 	        }, _this.whereAmI = function () {
 	            return _this.state.currentIndex;
@@ -652,6 +655,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this$state8 = _this.state;
 	            var currentIndex = _this$state8.currentIndex;
 	            var galleryHeight = _this$state8.galleryHeight;
+	            var _this$state8$style = _this$state8.style;
+	            var slideTransformStyle = _this$state8$style === undefined ? {} : _this$state8$style;
 	            var _this$props6 = _this.props;
 	            var images = _this$props6.images;
 	            var showThumbnails = _this$props6.showThumbnails;
@@ -692,7 +697,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        // set last slide as left slide if were sliding left from first slide
 	                        right: index === currentIndex + 1 || images.length >= 3 && infinite && index === 0 && currentIndex === images.length - 1
 	                    }),
-	                    style: _this._getSlideStyle(index),
+	                    style: Object.assign(_this._getSlideStyle(index), slideTransformStyle),
 	                    onClick: function onClick(event) {
 	                        return _onClick.call(_this, index, event);
 	                    }
