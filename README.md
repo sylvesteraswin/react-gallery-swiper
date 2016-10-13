@@ -71,7 +71,7 @@ class App extends React.Component {
 * `onThumbnailHover`: Function, `callback(currentIndex, event)`.
 * `onThumbnailClick`: Function, `callback(currentIndex, event)`.
 * `onBulletClick`: Function, `callback(currentIndex, event)`.
-* `onArrowClick`: Function, `callback(type, event)`.
+* `onArrowClick`: Function, `callback(type, currentIndex, event)`.
 * `onImageLoad`: Function, `callback(event)`.
 * `onThumbnailError`: Function, `callback(event)`.
 `The below 2 features are not completly built`

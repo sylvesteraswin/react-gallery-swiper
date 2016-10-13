@@ -308,8 +308,9 @@ class GallerySwiper extends Component {
         } = this.props;
 
         if (onArrowClick && typeof onArrowClick === 'function') {
-            onArrowClick.call(this, 'left', event);
+            onArrowClick.call(this, 'left', this.state.currentIndex - 1, event);
         }
+
         this.goTo(this.state.currentIndex - 1, event);
     };
 
@@ -321,8 +322,9 @@ class GallerySwiper extends Component {
         } = this.props;
 
         if (onArrowClick && typeof onArrowClick === 'function') {
-            onArrowClick.call(this, 'left', event);
+            onArrowClick.call(this, 'right', this.state.currentIndex + 1, event);
         }
+        
         this.goTo(this.state.currentIndex + 1, event);
     };
 
@@ -910,6 +912,7 @@ GallerySwiper.defaultProps = {
     slideInterval: 3000,
     thumbnailPosition: 'X',
     thumbnailHoverSlideDelay: 300,
+    onClick: () => {},
 };
 
 export default GallerySwiper;

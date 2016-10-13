@@ -362,8 +362,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var onArrowClick = _this.props.onArrowClick;
 
 	            if (onArrowClick && typeof onArrowClick === 'function') {
-	                onArrowClick.call(_this, 'left', event);
+	                onArrowClick.call(_this, 'left', _this.state.currentIndex - 1, event);
 	            }
+
 	            _this.goTo(_this.state.currentIndex - 1, event);
 	        }, _this._canSlideRight = function () {
 	            return _this.props.infinite || _this.state.currentIndex < _this.props.images.length - 1;
@@ -371,8 +372,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var onArrowClick = _this.props.onArrowClick;
 
 	            if (onArrowClick && typeof onArrowClick === 'function') {
-	                onArrowClick.call(_this, 'left', event);
+	                onArrowClick.call(_this, 'right', _this.state.currentIndex + 1, event);
 	            }
+
 	            _this.goTo(_this.state.currentIndex + 1, event);
 	        }, _this._handleResize = function () {
 	            clearTimeout(_this.handleResizeTimer);
@@ -848,7 +850,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    startIndex: 0,
 	    slideInterval: 3000,
 	    thumbnailPosition: 'X',
-	    thumbnailHoverSlideDelay: 300
+	    thumbnailHoverSlideDelay: 300,
+	    onClick: function onClick() {}
 	};
 
 	exports.default = GallerySwiper;
