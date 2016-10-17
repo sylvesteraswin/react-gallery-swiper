@@ -210,9 +210,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _this._slideRight = (0, _debounceEventHandler2.default)(_this._slideRight, DEBOUNCE_INTERVAL, true);
 	        }, _this.componentDidMount = function () {
 	            // delay the event handler to make sure we get the correct image offset width and height
-	            setTimeout(function () {
-	                _this._handleResize();
-	            }, 500);
+	            _this._handleResize();
 
 	            var disableArrowKeys = _this.props.disableArrowKeys;
 
@@ -388,11 +386,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                if (_this._gallerySwiperThumbnail) {
 	                    _this.setState({
-	                        thumbnailWidth: _this._gallerySwiperThumbnail.offsetWidth,
-	                        thumbnailHeight: _this._gallerySwiperThumbnail.offsetHeight
+	                        thumbnailWidth: _this._gallerySwiper.offsetWidth,
+	                        thumbnailHeight: _this._gallerySwiper.offsetHeight
 	                    });
 	                }
-	            }, 100);
+	            }, 500);
 	        }, _this._handleKeyDown = function (event) {
 	            var _keyfnMap;
 
@@ -612,7 +610,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                transform: translate3d,
 	                zIndex: zIndex
 	            };
-	        }, _this._getTranslateXForTwoSlide = function () {
+	        }, _this._getTranslateXForTwoSlide = function (index) {
 	            // Infinte swipe when there are only 2 slides
 	            var _this$state7 = _this.state;
 	            var currentIndex = _this$state7.currentIndex;

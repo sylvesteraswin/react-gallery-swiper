@@ -108,9 +108,7 @@ class GallerySwiper extends Component {
 
     componentDidMount = () => {
         // delay the event handler to make sure we get the correct image offset width and height
-        setTimeout(() => {
-            this._handleResize();
-        }, 500);
+        this._handleResize();
 
         const {
             disableArrowKeys,
@@ -324,7 +322,7 @@ class GallerySwiper extends Component {
         if (onArrowClick && typeof onArrowClick === 'function') {
             onArrowClick.call(this, 'right', this.state.currentIndex + 1, event);
         }
-        
+
         this.goTo(this.state.currentIndex + 1, event);
     };
 
@@ -340,11 +338,11 @@ class GallerySwiper extends Component {
 
             if (this._gallerySwiperThumbnail) {
                 this.setState({
-                    thumbnailWidth: this._gallerySwiperThumbnail.offsetWidth,
-                    thumbnailHeight: this._gallerySwiperThumbnail.offsetHeight,
+                    thumbnailWidth: this._gallerySwiper.offsetWidth,
+                    thumbnailHeight: this._gallerySwiper.offsetHeight,
                 });
             }
-        }, 100);
+        }, 500);
     };
 
     _handleKeyDown = (event) => {
@@ -621,7 +619,7 @@ class GallerySwiper extends Component {
         };
     };
 
-    _getTranslateXForTwoSlide = () => {
+    _getTranslateXForTwoSlide = (index) => {
         // Infinte swipe when there are only 2 slides
         const {
             currentIndex,
