@@ -209,13 +209,11 @@ $base-class: zvui-gallery-swiper;
             transition: border .3s ease-out;
             width: 100%;
             max-width: 80px;
-            opacity: .8;
         }
 
         &.active {
             img {
                 border: 2px solid #000;
-                opacity: 1;
             }
         }
     }
