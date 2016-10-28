@@ -694,7 +694,7 @@ class GallerySwiper extends Component {
                 originalClass = '',
                 thumbnailClass = '',
                 renderItem: ImgRenderItem = null,
-                renderItem: ImgRenderThumb = null,
+                renderThumb: ImgRenderThumb = null,
             } = img;
             const renderItem = ImgRenderItem || customRenderItem || this._renderItem;
             const renderThumb = ImgRenderThumb || customRenderThumb || this._renderThumb;
