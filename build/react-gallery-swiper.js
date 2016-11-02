@@ -1,13 +1,13 @@
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
-		module.exports = factory(require("react"), require("react-dom"));
+		module.exports = factory(require("react"));
 	else if(typeof define === 'function' && define.amd)
-		define(["react", "react-dom"], factory);
+		define(["react"], factory);
 	else if(typeof exports === 'object')
-		exports["GallerySwiper"] = factory(require("react"), require("react-dom"));
+		exports["GallerySwiper"] = factory(require("react"));
 	else
-		root["GallerySwiper"] = factory(root["React"], root["ReactDOM"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_2__, __WEBPACK_EXTERNAL_MODULE_6__) {
+		root["GallerySwiper"] = factory(root["React"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -74,25 +74,23 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _reactSwipeable2 = _interopRequireDefault(_reactSwipeable);
 
-	var _reactLazyload = __webpack_require__(4);
+	var _classnames3 = __webpack_require__(4);
 
-	var _reactLazyload2 = _interopRequireDefault(_reactLazyload);
+	var _classnames4 = _interopRequireDefault(_classnames3);
 
-	var _classnames = __webpack_require__(12);
-
-	var _classnames2 = _interopRequireDefault(_classnames);
-
-	var _addEventListener = __webpack_require__(13);
+	var _addEventListener = __webpack_require__(5);
 
 	var _addEventListener2 = _interopRequireDefault(_addEventListener);
 
-	var _removeEventListener = __webpack_require__(14);
+	var _removeEventListener = __webpack_require__(6);
 
 	var _removeEventListener2 = _interopRequireDefault(_removeEventListener);
 
-	var _debounceEventHandler = __webpack_require__(15);
+	var _debounceEventHandler = __webpack_require__(7);
 
 	var _debounceEventHandler2 = _interopRequireDefault(_debounceEventHandler);
+
+	var _attrHelpers = __webpack_require__(8);
 
 	function _interopRequireDefault(obj) {
 	    return obj && obj.__esModule ? obj : { default: obj };
@@ -131,6 +129,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	var RIGHT_ARROW = 39;
 	var DEBOUNCE_INTERVAL = 500;
 
+	var NAN_IMG = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+	var LOADED_CLS = 'loaded';
+	var NOT_LOADED_CLS = 'notloaded';
+	var ANIMATE_CLS = 'animate';
+
 	var GallerySwiper = function (_Component) {
 	    _inherits(GallerySwiper, _Component);
 
@@ -147,6 +150,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = GallerySwiper.__proto__ || Object.getPrototypeOf(GallerySwiper)).call.apply(_ref, [this].concat(args))), _this), _this.state = {
 	            currentIndex: 0,
+	            slides: [],
 	            thumbsTranslateX: 0,
 	            thumbsTranslateY: 0,
 	            offsetPercentage: 0,
@@ -154,7 +158,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            galleryHeight: 0,
 	            thumbnailWidth: 0,
 	            thumbnailHeight: 0,
-	            events: {}
+	            events: {},
+	            lazyLoad: {
+	                thumbnails: false
+	            }
 	        }, _this.componentWillReceiveProps = function (nextProps) {
 	            var disableArrowKeys = _this.props.disableArrowKeys;
 	            var newDisableArrowKeys = nextProps.disableArrowKeys;
@@ -200,7 +207,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _this._updateThumbnailTranslate(prevState);
 	            }
 	        }, _this.componentWillMount = function () {
-	            var startIndex = _this.props.startIndex;
+	            var _this$props2 = _this.props;
+	            var startIndex = _this$props2.startIndex;
+	            var lazyLoad = _this$props2.lazyLoad;
 
 	            _this.setState({
 	                currentIndex: startIndex
@@ -208,6 +217,13 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            _this._slideLeft = (0, _debounceEventHandler2.default)(_this._slideLeft, DEBOUNCE_INTERVAL, true);
 	            _this._slideRight = (0, _debounceEventHandler2.default)(_this._slideRight, DEBOUNCE_INTERVAL, true);
+
+	            if (lazyLoad) {
+	                setTimeout(function () {
+	                    _this._loadThumbnails();
+	                    _this._loadMainImage();
+	                }, 100);
+	            }
 	        }, _this.componentDidMount = function () {
 	            // delay the event handler to make sure we get the correct image offset width and height
 	            _this._handleResize();
@@ -262,9 +278,82 @@ return /******/ (function(modules) { // webpackBootstrap
 	                style: {
 	                    transition: 'transform .3s ease-out'
 	                }
+	            }, function () {
+	                setTimeout(function () {
+	                    _this._loadMainImage();
+	                }, 100);
 	            });
 	        }, _this.whereAmI = function () {
 	            return _this.state.currentIndex;
+	        }, _this._loadMainImage = function () {
+	            var lazyLoad = _this.props.lazyLoad;
+
+	            if (!lazyLoad) {
+	                return false;
+	            }
+
+	            var index = _this.whereAmI();
+
+	            var elImg = _this['_galleryImage-' + index];
+	            var elWrap = _this['_gallerySlide-' + index];
+
+	            if (elImg && elImg.nodeName.toLowerCase() === 'img') {
+	                var shouldLoad = elImg.className.indexOf(NOT_LOADED_CLS) >= 0;
+	                var src = elImg.getAttribute('data-src');
+	                if (shouldLoad && src) {
+	                    (function () {
+	                        var img = new Image();
+	                        img.src = src;
+	                        elWrap.appendChild(img);
+	                        img.onload = function () {
+	                            var cls = (0, _attrHelpers.getClassAsArray)(img);
+	                            (0, _attrHelpers.pushUniqueStringToArray)(cls, LOADED_CLS);
+	                            (0, _attrHelpers.addClassFromArray)(img, cls);
+	                            // img.className = LOADED_CLS;
+	                            setTimeout(function () {
+	                                elImg.className = LOADED_CLS;
+	                            }, 500);
+	                        };
+	                    })();
+	                }
+	            }
+	        }, _this._loadImage = function (img, index, images) {
+	            var image = new Image();
+	            var src = img.getAttribute('data-src');
+
+	            image.onload = function () {
+	                img.src = src;
+	                var cls = (0, _attrHelpers.getClassAsArray)(img);
+
+	                (0, _attrHelpers.removeStringFromArray)(cls, NOT_LOADED_CLS);
+	                (0, _attrHelpers.pushUniqueStringToArray)(cls, LOADED_CLS);
+	                (0, _attrHelpers.addClassFromArray)(img, cls);
+	            };
+	            image.src = src;
+
+	            if (index === images.length) {
+	                _this.setState({
+	                    lazyLoad: {
+	                        thumbnails: true
+	                    }
+	                });
+	            }
+	        }, _this._loadThumbnails = function () {
+	            var _this$state$lazyLoad = _this.state.lazyLoad;
+	            _this$state$lazyLoad = _this$state$lazyLoad === undefined ? {} : _this$state$lazyLoad;
+	            var _this$state$lazyLoad$ = _this$state$lazyLoad.thumbnails;
+	            var thumbnails = _this$state$lazyLoad$ === undefined ? false : _this$state$lazyLoad$;
+
+	            if (thumbnails) {
+	                return false;
+	            }
+
+	            var thumbs = _this._gallerySwiperThumbnails;
+
+	            if (thumbs) {
+	                var images = thumbs.querySelectorAll('img');
+	                images.forEach(_this._loadImage);
+	            }
 	        }, _this._setThumbsTranslate = function (thumbsTranslate) {
 	            var thumbnailPosition = _this.props.thumbnailPosition;
 
@@ -278,9 +367,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            }
 	        }, _this._getThumbsTranslate = function (indexDifference) {
-	            var _this$props2 = _this.props;
-	            var disableThumbnailScroll = _this$props2.disableThumbnailScroll;
-	            var thumbnailPosition = _this$props2.thumbnailPosition;
+	            var _this$props3 = _this.props;
+	            var disableThumbnailScroll = _this$props3.disableThumbnailScroll;
+	            var thumbnailPosition = _this$props3.thumbnailPosition;
 
 	            if (disableThumbnailScroll) {
 	                return 0;
@@ -384,13 +473,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    });
 	                }
 
-	                if (_this._gallerySwiperThumbnail) {
+	                if (_this._gallerySwiperThumbnails) {
 	                    _this.setState({
 	                        thumbnailWidth: _this._gallerySwiper.offsetWidth,
 	                        thumbnailHeight: _this._gallerySwiper.offsetHeight
 	                    });
 	                }
-	            }, 500);
+	            }, 100);
 	        }, _this._handleKeyDown = function (event) {
 	            var _keyfnMap;
 
@@ -418,10 +507,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                event.target.src = defaultImage;
 	            }
 	        }, _this._handleMouseOverThumbnail = function (index, event) {
-	            var _this$props3 = _this.props;
-	            var sliderOnThumbnailHover = _this$props3.sliderOnThumbnailHover;
-	            var thumbnailHoverSlideDelay = _this$props3.thumbnailHoverSlideDelay;
-	            var onThumbnailHover = _this$props3.onThumbnailHover;
+	            var _this$props4 = _this.props;
+	            var sliderOnThumbnailHover = _this$props4.sliderOnThumbnailHover;
+	            var thumbnailHoverSlideDelay = _this$props4.thumbnailHoverSlideDelay;
+	            var onThumbnailHover = _this$props4.onThumbnailHover;
 
 	            if (sliderOnThumbnailHover) {
 	                _this.setState({
@@ -508,39 +597,69 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                _this.goTo(slideTo);
 	            }, 0);
-	        }, _this._renderItem = function (img) {
-	            var _this$props4 = _this.props;
-	            var _this$props4$onImageE = _this$props4.onImageError;
-	            var onImageError = _this$props4$onImageE === undefined ? _this._handleImageError : _this$props4$onImageE;
-	            var onImageLoad = _this$props4.onImageLoad;
-	            var srcSet = img.srcSet;
+	        }, _this._renderItem = function (img, index) {
+	            var _classnames;
+
+	            var _this$props5 = _this.props;
+	            var _this$props5$onImageE = _this$props5.onImageError;
+	            var onImageError = _this$props5$onImageE === undefined ? _this._handleImageError : _this$props5$onImageE;
+	            var onImageLoad = _this$props5.onImageLoad;
+	            var lazyLoad = _this$props5.lazyLoad;
+	            var _this$props5$lazyLoad = _this$props5.lazyLoadAnimation;
+	            var lazyLoadAnimation = _this$props5$lazyLoad === undefined ? false : _this$props5$lazyLoad;
+	            var aspectRatio = _this$props5.aspectRatio;
 	            var sizes = img.sizes;
+	            var thumbnail = img.thumbnail;
 	            var original = img.original;
 	            var _img$originalAlt = img.originalAlt;
 	            var originalAlt = _img$originalAlt === undefined ? '' : _img$originalAlt;
 
-	            return _react2.default.createElement('div', {
-	                className: BASE_CLASS + '-slide-image' }, _react2.default.createElement('img', {
-	                src: original,
+	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad), _classnames));
+
+	            var imgProps = {
+	                className: classes,
+	                src: lazyLoad ? thumbnail : original,
+	                ref: function ref(i) {
+	                    return _this['_galleryImage-' + index] = i;
+	                },
+	                'data-src': lazyLoad ? original : '',
 	                alt: originalAlt,
-	                srcSet: srcSet,
-	                size: sizes,
 	                onLoad: onImageLoad,
-	                onError: onImageError
-	            }));
+	                onError: onImageError,
+	                size: sizes
+	            };
+
+	            return _react2.default.createElement('div', {
+	                className: BASE_CLASS + '-slide-image',
+	                ref: function ref(i) {
+	                    return _this['_gallerySlide-' + index] = i;
+	                } }, _react2.default.createElement('div', { className: (0, _classnames4.default)('aspectRatio', 'z--' + aspectRatio) }), _react2.default.createElement('img', imgProps));
 	        }, _this._renderThumb = function (img) {
+	            var _classnames2;
+
 	            var _img$thumbnail = img.thumbnail;
 	            var thumbnail = _img$thumbnail === undefined ? '' : _img$thumbnail;
 	            var _img$thumbnailAlt = img.thumbnailAlt;
 	            var thumbnailAlt = _img$thumbnailAlt === undefined ? '' : _img$thumbnailAlt;
 	            var _img$onThumbnailError = img.onThumbnailError;
 	            var onThumbnailError = _img$onThumbnailError === undefined ? _this._handleImageError : _img$onThumbnailError;
+	            var _this$props6 = _this.props;
+	            var _this$props6$lazyLoad = _this$props6.lazyLoad;
+	            var lazyLoad = _this$props6$lazyLoad === undefined ? false : _this$props6$lazyLoad;
+	            var _this$props6$lazyLoad2 = _this$props6.lazyLoadAnimation;
+	            var lazyLoadAnimation = _this$props6$lazyLoad2 === undefined ? false : _this$props6$lazyLoad2;
 
-	            return _react2.default.createElement('img', {
-	                src: thumbnail,
+	            var classes = (0, _classnames4.default)((_classnames2 = {}, _defineProperty(_classnames2, NOT_LOADED_CLS, lazyLoad), _defineProperty(_classnames2, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames2, LOADED_CLS, !lazyLoad), _classnames2));
+
+	            var imgProps = {
+	                className: classes,
+	                src: lazyLoad ? NAN_IMG : thumbnail,
+	                'data-src': lazyLoad ? thumbnail : '',
 	                alt: thumbnailAlt,
 	                onError: onThumbnailError
-	            });
+	            };
+
+	            return _react2.default.createElement('img', imgProps);
 	        }, _this._getThumbnailStyle = function () {
 	            var thumbnailPosition = _this.props.thumbnailPosition;
 	            var _this$state5 = _this.state;
@@ -567,9 +686,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var currentIndex = _this$state6.currentIndex;
 	            var offsetPercentage = _this$state6.offsetPercentage;
 	            var previousIndex = _this$state6.previousIndex;
-	            var _this$props5 = _this.props;
-	            var infinite = _this$props5.infinite;
-	            var images = _this$props5.images;
+	            var _this$props7 = _this.props;
+	            var infinite = _this$props7.infinite;
+	            var images = _this$props7.images;
 
 	            var baseTraslate = -100 * currentIndex;
 
@@ -651,25 +770,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            return translateX;
+	        }, _this.getDimensions = function () {
+	            return {
+	                width: _this.state.galleryWidth,
+	                height: _this.state.galleryHeight
+	            };
 	        }, _this.render = function () {
 	            var _this$state8 = _this.state;
 	            var currentIndex = _this$state8.currentIndex;
 	            var galleryHeight = _this$state8.galleryHeight;
 	            var _this$state8$style = _this$state8.style;
 	            var slideTransformStyle = _this$state8$style === undefined ? {} : _this$state8$style;
-	            var _this$props6 = _this.props;
-	            var images = _this$props6.images;
-	            var showThumbnails = _this$props6.showThumbnails;
-	            var showBullets = _this$props6.showBullets;
-	            var showIndex = _this$props6.showIndex;
-	            var indexSeparator = _this$props6.indexSeparator;
-	            var showNav = _this$props6.showNav;
-	            var disableSwipe = _this$props6.disableSwipe;
-	            var infinite = _this$props6.infinite;
-	            var _onClick = _this$props6.onClick;
-	            var thumbnailPosition = _this$props6.thumbnailPosition;
-	            var customRenderItem = _this$props6.renderItem;
-	            var customRenderThumb = _this$props6.renderThumb;
+	            var _this$props8 = _this.props;
+	            var images = _this$props8.images;
+	            var showThumbnails = _this$props8.showThumbnails;
+	            var showBullets = _this$props8.showBullets;
+	            var showIndex = _this$props8.showIndex;
+	            var indexSeparator = _this$props8.indexSeparator;
+	            var showNav = _this$props8.showNav;
+	            var disableSwipe = _this$props8.disableSwipe;
+	            var infinite = _this$props8.infinite;
+	            var _onClick = _this$props8.onClick;
+	            var thumbnailPosition = _this$props8.thumbnailPosition;
+	            var aspectRatio = _this$props8.aspectRatio;
+	            var customRenderItem = _this$props8.renderItem;
+	            var customRenderThumb = _this$props8.renderThumb;
 
 	            var slides = [];
 	            var thumbnails = [];
@@ -690,7 +815,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                var slide = _react2.default.createElement('div', {
 	                    key: index,
-	                    className: (0, _classnames2.default)(BASE_CLASS + '-slide', originalClass, {
+	                    className: (0, _classnames4.default)(BASE_CLASS + '-slide', originalClass, {
 	                        // set first slide as right slide if were sliding right from last slide
 	                        left: index === currentIndex - 1 || images.length >= 3 && infinite && index === images.length - 1 && currentIndex === 0,
 	                        center: index === currentIndex,
@@ -701,7 +826,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    onClick: function onClick(event) {
 	                        return _onClick.call(_this, index, event);
 	                    }
-	                }, renderItem(img));
+	                }, renderItem(img, index));
 
 	                slides.push(slide);
 
@@ -714,7 +839,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            return _this._handleMouseLeaveThumbnail.call(_this, index, event);
 	                        },
 	                        key: index,
-	                        className: (0, _classnames2.default)(BASE_CLASS + '-thumbnail', thumbnailClass, {
+	                        className: (0, _classnames4.default)(BASE_CLASS + '-thumbnail', thumbnailClass, {
 	                            active: currentIndex === index
 	                        }),
 	                        onTouchStart: function onTouchStart(event) {
@@ -723,14 +848,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        onClick: function onClick(event) {
 	                            return _this._handleThumbnailClick.call(_this, index, event);
 	                        }
-	                    }, renderThumb(img));
+	                    }, _react2.default.createElement('div', { className: (0, _classnames4.default)('aspectRatio', 'z--' + aspectRatio) }), renderThumb(img));
 	                    thumbnails.push(thumbnail);
 	                }
 
 	                if (showBullets) {
 	                    var bullet = _react2.default.createElement('li', {
 	                        key: index,
-	                        className: (0, _classnames2.default)(BASE_CLASS + '-bullet', {
+	                        className: (0, _classnames4.default)(BASE_CLASS + '-bullet', {
 	                            active: currentIndex === index
 	                        }),
 	                        onTouchStart: function onTouchStart(event) {
@@ -745,9 +870,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 
 	            return _react2.default.createElement('div', {
-	                className: (0, _classnames2.default)(BASE_CLASS, 'align' + thumbnailPosition) }, _react2.default.createElement('div', {
-	                className: (0, _classnames2.default)(BASE_CLASS + '-content') }, _react2.default.createElement('div', {
-	                className: (0, _classnames2.default)(BASE_CLASS + '-slides-wrapper') }, _this._canNavigate() ? [showNav && _react2.default.createElement('div', {
+	                className: (0, _classnames4.default)(BASE_CLASS, 'align' + thumbnailPosition) }, _react2.default.createElement('div', {
+	                className: (0, _classnames4.default)(BASE_CLASS + '-content') }, _react2.default.createElement('div', {
+	                className: (0, _classnames4.default)(BASE_CLASS + '-slides-wrapper') }, _this._canNavigate() ? [showNav && _react2.default.createElement('div', {
 	                className: BASE_CLASS + '-navigation-wrapper',
 	                key: 'navigation' }, _react2.default.createElement('button', {
 	                className: BASE_CLASS + '-navigation left',
@@ -786,9 +911,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                className: BASE_CLASS + '-bullets' }, _react2.default.createElement('ul', {
 	                className: BASE_CLASS + '-bullets-container' }, bullets)), showIndex && _react2.default.createElement('div', {
 	                className: BASE_CLASS + '-index' }, _react2.default.createElement('span', { className: BASE_CLASS + '-index-current' }, _this.state.currentIndex + 1), _react2.default.createElement('span', { className: BASE_CLASS + '-index-seperator' }, indexSeparator), _react2.default.createElement('span', { className: BASE_CLASS + '-index-total' }, images.length))), showThumbnails && _react2.default.createElement('div', {
-	                className: (0, _classnames2.default)(BASE_CLASS + '-thumbnails'),
+	                className: (0, _classnames4.default)(BASE_CLASS + '-thumbnails'),
 	                ref: function ref(i) {
-	                    return _this._gallerySwiperThumbnail = i;
+	                    return _this._gallerySwiperThumbnails = i;
 	                },
 	                style: thumbnailPosition === 'Y' ? {
 	                    height: galleryHeight
@@ -808,7 +933,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	GallerySwiper.propTypes = {
 	    images: _react.PropTypes.array.isRequired,
 	    showNav: _react.PropTypes.bool,
+	    aspectRatio: _react.PropTypes.oneOf(['square', '3x4', '4x6', '5x7', '8x10', '4x3', '6x4', '7x5', '10x8']),
 	    lazyLoad: _react.PropTypes.bool,
+	    lazyLoadAnimation: _react.PropTypes.bool,
 	    infinite: _react.PropTypes.bool,
 	    showIndex: _react.PropTypes.bool,
 	    showBullets: _react.PropTypes.bool,
@@ -835,7 +962,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	GallerySwiper.defaultProps = {
 	    images: [],
 	    showNav: true,
+	    aspectRatio: 'square',
 	    lazyLoad: false,
+	    lazyLoadAnimation: false,
 	    infinite: true,
 	    showIndex: false,
 	    showBullets: false,
@@ -1060,742 +1189,6 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
-	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.forceCheck = exports.lazyload = undefined;
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _react = __webpack_require__(2);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	var _reactDom = __webpack_require__(6);
-
-	var _reactDom2 = _interopRequireDefault(_reactDom);
-
-	var _event = __webpack_require__(7);
-
-	var _scrollParent = __webpack_require__(8);
-
-	var _scrollParent2 = _interopRequireDefault(_scrollParent);
-
-	var _debounce = __webpack_require__(9);
-
-	var _debounce2 = _interopRequireDefault(_debounce);
-
-	var _throttle = __webpack_require__(10);
-
-	var _throttle2 = _interopRequireDefault(_throttle);
-
-	var _decorator = __webpack_require__(11);
-
-	var _decorator2 = _interopRequireDefault(_decorator);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } /**
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                * react-lazyload
-	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                */
-
-
-	var LISTEN_FLAG = 'data-lazyload-listened';
-	var listeners = [];
-	var pending = [];
-
-	/**
-	 * Check if `component` is visible in overflow container `parent`
-	 * @param  {node} component React component
-	 * @param  {node} parent    component's scroll parent
-	 * @return {bool}
-	 */
-	var checkOverflowVisible = function checkOverflowVisible(component, parent) {
-	  var node = _reactDom2.default.findDOMNode(component);
-
-	  var _parent$getBoundingCl = parent.getBoundingClientRect();
-
-	  var parentTop = _parent$getBoundingCl.top;
-	  var parentHeight = _parent$getBoundingCl.height;
-
-	  var windowInnerHeight = window.innerHeight || document.documentElement.clientHeight;
-
-	  // calculate top and height of the intersection of the element's scrollParent and viewport
-	  var intersectionTop = Math.max(parentTop, 0); // intersection's top relative to viewport
-	  var intersectionHeight = Math.min(windowInnerHeight, parentTop + parentHeight) - intersectionTop; // height
-
-	  // check whether the element is visible in the intersection
-
-	  var _node$getBoundingClie = node.getBoundingClientRect();
-
-	  var top = _node$getBoundingClie.top;
-	  var height = _node$getBoundingClie.height;
-
-	  var offsetTop = top - intersectionTop; // element's top relative to intersection
-
-	  var offsets = Array.isArray(component.props.offset) ? component.props.offset : [component.props.offset, component.props.offset]; // Be compatible with previous API
-
-	  return offsetTop - offsets[0] <= intersectionHeight && offsetTop + height + offsets[1] >= 0;
-	};
-
-	/**
-	 * Check if `component` is visible in document
-	 * @param  {node} component React component
-	 * @return {bool}
-	 */
-	var checkNormalVisible = function checkNormalVisible(component) {
-	  var node = _reactDom2.default.findDOMNode(component);
-
-	  var _node$getBoundingClie2 = node.getBoundingClientRect();
-
-	  var top = _node$getBoundingClie2.top;
-	  var elementHeight = _node$getBoundingClie2.height;
-
-
-	  var windowInnerHeight = window.innerHeight || document.documentElement.clientHeight;
-
-	  var offsets = Array.isArray(component.props.offset) ? component.props.offset : [component.props.offset, component.props.offset]; // Be compatible with previous API
-
-	  return top - offsets[0] <= windowInnerHeight && top + elementHeight + offsets[1] >= 0;
-	};
-
-	/**
-	 * Detect if element is visible in viewport, if so, set `visible` state to true.
-	 * If `once` prop is provided true, remove component as listener after checkVisible
-	 *
-	 * @param  {React} component   React component that respond to scroll and resize
-	 */
-	var checkVisible = function checkVisible(component) {
-	  var node = _reactDom2.default.findDOMNode(component);
-	  if (!node) {
-	    return;
-	  }
-
-	  var parent = (0, _scrollParent2.default)(node);
-	  var isOverflow = parent !== node.ownerDocument && parent !== document && parent !== document.documentElement;
-
-	  var visible = isOverflow ? checkOverflowVisible(component, parent) : checkNormalVisible(component);
-
-	  if (visible) {
-	    // Avoid extra render if previously is visible, yeah I mean `render` call,
-	    // not actual DOM render
-	    if (!component.visible) {
-	      if (component.props.once) {
-	        pending.push(component);
-	      }
-
-	      component.visible = true;
-	      component.forceUpdate();
-	    }
-	  } else if (!(component.props.once && component.visible)) {
-	    component.visible = false;
-	  }
-	};
-
-	var purgePending = function purgePending() {
-	  pending.forEach(function (component) {
-	    var index = listeners.indexOf(component);
-	    if (index !== -1) {
-	      listeners.splice(index, 1);
-	    }
-	  });
-
-	  pending = [];
-	};
-
-	var lazyLoadHandler = function lazyLoadHandler() {
-	  for (var i = 0; i < listeners.length; ++i) {
-	    var listener = listeners[i];
-	    checkVisible(listener);
-	  }
-
-	  // Remove `once` component in listeners
-	  purgePending();
-	};
-
-	// Depending on component's props
-	var delayType = void 0;
-	var finalLazyLoadHandler = null;
-
-	var LazyLoad = function (_Component) {
-	  _inherits(LazyLoad, _Component);
-
-	  function LazyLoad(props) {
-	    _classCallCheck(this, LazyLoad);
-
-	    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LazyLoad).call(this, props));
-
-	    _this.visible = false;
-
-	    return _this;
-	  }
-
-	  _createClass(LazyLoad, [{
-	    key: 'componentDidMount',
-	    value: function componentDidMount() {
-	      if (typeof process !== 'undefined' && ("production") !== 'production') {
-	        if (_react2.default.Children.count(this.props.children) > 1) {
-	          console.warn('[react-lazyload] Only one child is allowed to be passed to `LazyLoad`.');
-	        }
-
-	        if (this.props.wheel) {
-	          // eslint-disable-line
-	          console.warn('[react-lazyload] Props `wheel` is not supported anymore, try set `overflow` for lazy loading in overflow containers.');
-	        }
-
-	        // Warn the user if placeholder and height is not specified and the rendered height is 0
-	        if (!this.props.placeholder && this.props.height === undefined && _reactDom2.default.findDOMNode(this).offsetHeight === 0) {
-	          console.warn('[react-lazyload] Please add `height` props to <LazyLoad> for better performance.');
-	        }
-	      }
-
-	      // It's unlikely to change delay type on the fly, this is mainly
-	      // designed for tests
-	      var needResetFinalLazyLoadHandler = false;
-	      if (this.props.debounce !== undefined && delayType === 'throttle') {
-	        console.warn('[react-lazyload] Previous delay function is `throttle`, now switching to `debounce`, try setting them unanimously');
-	        needResetFinalLazyLoadHandler = true;
-	      } else if (delayType === 'debounce' && this.props.debounce === undefined) {
-	        console.warn('[react-lazyload] Previous delay function is `debounce`, now switching to `throttle`, try setting them unanimously');
-	        needResetFinalLazyLoadHandler = true;
-	      }
-
-	      if (needResetFinalLazyLoadHandler) {
-	        (0, _event.off)(window, 'scroll', finalLazyLoadHandler);
-	        (0, _event.off)(window, 'resize', finalLazyLoadHandler);
-	        finalLazyLoadHandler = null;
-	      }
-
-	      if (!finalLazyLoadHandler) {
-	        if (this.props.debounce !== undefined) {
-	          finalLazyLoadHandler = (0, _debounce2.default)(lazyLoadHandler, typeof this.props.debounce === 'number' ? this.props.debounce : 300);
-	          delayType = 'debounce';
-	        } else {
-	          finalLazyLoadHandler = (0, _throttle2.default)(lazyLoadHandler, typeof this.props.throttle === 'number' ? this.props.throttle : 300);
-	          delayType = 'throttle';
-	        }
-	      }
-
-	      if (this.props.overflow) {
-	        var parent = (0, _scrollParent2.default)(_reactDom2.default.findDOMNode(this));
-	        if (parent) {
-	          var listenerCount = 1 + +parent.getAttribute(LISTEN_FLAG);
-	          if (listenerCount === 1) {
-	            parent.addEventListener('scroll', finalLazyLoadHandler);
-	          }
-	          parent.setAttribute(LISTEN_FLAG, listenerCount);
-	        }
-	      } else if (listeners.length === 0 || needResetFinalLazyLoadHandler) {
-	        var _props = this.props;
-	        var scroll = _props.scroll;
-	        var resize = _props.resize;
-
-
-	        if (scroll) {
-	          (0, _event.on)(window, 'scroll', finalLazyLoadHandler);
-	        }
-
-	        if (resize) {
-	          (0, _event.on)(window, 'resize', finalLazyLoadHandler);
-	        }
-	      }
-
-	      listeners.push(this);
-	      checkVisible(this);
-	    }
-	  }, {
-	    key: 'shouldComponentUpdate',
-	    value: function shouldComponentUpdate() {
-	      return this.visible;
-	    }
-	  }, {
-	    key: 'componentWillUnmount',
-	    value: function componentWillUnmount() {
-	      if (this.props.overflow) {
-	        var parent = (0, _scrollParent2.default)(_reactDom2.default.findDOMNode(this));
-	        if (parent) {
-	          var listenerCount = +parent.getAttribute(LISTEN_FLAG) - 1;
-	          if (listenerCount === 0) {
-	            parent.removeEventListener('scroll', finalLazyLoadHandler);
-	            parent.removeAttribute(LISTEN_FLAG);
-	          } else {
-	            parent.setAttribute(LISTEN_FLAG, listenerCount);
-	          }
-	        }
-	      }
-
-	      var index = listeners.indexOf(this);
-	      if (index !== -1) {
-	        listeners.splice(index, 1);
-	      }
-
-	      if (listeners.length === 0) {
-	        (0, _event.off)(window, 'resize', finalLazyLoadHandler);
-	        (0, _event.off)(window, 'scroll', finalLazyLoadHandler);
-	      }
-	    }
-	  }, {
-	    key: 'render',
-	    value: function render() {
-	      return this.visible ? this.props.children : this.props.placeholder ? this.props.placeholder : _react2.default.createElement('div', { style: { height: this.props.height }, className: 'lazyload-placeholder' });
-	    }
-	  }]);
-
-	  return LazyLoad;
-	}(_react.Component);
-
-	LazyLoad.propTypes = {
-	  once: _react.PropTypes.bool,
-	  height: _react.PropTypes.oneOfType([_react.PropTypes.number, _react.PropTypes.string]),
-	  offset: _react.PropTypes.oneOfType([_react.PropTypes.number, _react.PropTypes.arrayOf(_react.PropTypes.number)]),
-	  overflow: _react.PropTypes.bool,
-	  resize: _react.PropTypes.bool,
-	  scroll: _react.PropTypes.bool,
-	  children: _react.PropTypes.node,
-	  throttle: _react.PropTypes.oneOfType([_react.PropTypes.number, _react.PropTypes.bool]),
-	  debounce: _react.PropTypes.oneOfType([_react.PropTypes.number, _react.PropTypes.bool]),
-	  placeholder: _react.PropTypes.node
-	};
-
-	LazyLoad.defaultProps = {
-	  once: false,
-	  offset: 0,
-	  overflow: false,
-	  resize: false,
-	  scroll: true
-	};
-
-	var lazyload = exports.lazyload = _decorator2.default;
-	exports.default = LazyLoad;
-	exports.forceCheck = lazyLoadHandler;
-	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)))
-
-/***/ },
-/* 5 */
-/***/ function(module, exports) {
-
-	// shim for using process in browser
-	var process = module.exports = {};
-
-	// cached from whatever global is present so that test runners that stub it
-	// don't break things.  But we need to wrap it in a try catch in case it is
-	// wrapped in strict mode code which doesn't define any globals.  It's inside a
-	// function because try/catches deoptimize in certain engines.
-
-	var cachedSetTimeout;
-	var cachedClearTimeout;
-
-	function defaultSetTimout() {
-	    throw new Error('setTimeout has not been defined');
-	}
-	function defaultClearTimeout () {
-	    throw new Error('clearTimeout has not been defined');
-	}
-	(function () {
-	    try {
-	        if (typeof setTimeout === 'function') {
-	            cachedSetTimeout = setTimeout;
-	        } else {
-	            cachedSetTimeout = defaultSetTimout;
-	        }
-	    } catch (e) {
-	        cachedSetTimeout = defaultSetTimout;
-	    }
-	    try {
-	        if (typeof clearTimeout === 'function') {
-	            cachedClearTimeout = clearTimeout;
-	        } else {
-	            cachedClearTimeout = defaultClearTimeout;
-	        }
-	    } catch (e) {
-	        cachedClearTimeout = defaultClearTimeout;
-	    }
-	} ())
-	function runTimeout(fun) {
-	    if (cachedSetTimeout === setTimeout) {
-	        //normal enviroments in sane situations
-	        return setTimeout(fun, 0);
-	    }
-	    // if setTimeout wasn't available but was latter defined
-	    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-	        cachedSetTimeout = setTimeout;
-	        return setTimeout(fun, 0);
-	    }
-	    try {
-	        // when when somebody has screwed with setTimeout but no I.E. maddness
-	        return cachedSetTimeout(fun, 0);
-	    } catch(e){
-	        try {
-	            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-	            return cachedSetTimeout.call(null, fun, 0);
-	        } catch(e){
-	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-	            return cachedSetTimeout.call(this, fun, 0);
-	        }
-	    }
-
-
-	}
-	function runClearTimeout(marker) {
-	    if (cachedClearTimeout === clearTimeout) {
-	        //normal enviroments in sane situations
-	        return clearTimeout(marker);
-	    }
-	    // if clearTimeout wasn't available but was latter defined
-	    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-	        cachedClearTimeout = clearTimeout;
-	        return clearTimeout(marker);
-	    }
-	    try {
-	        // when when somebody has screwed with setTimeout but no I.E. maddness
-	        return cachedClearTimeout(marker);
-	    } catch (e){
-	        try {
-	            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-	            return cachedClearTimeout.call(null, marker);
-	        } catch (e){
-	            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-	            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-	            return cachedClearTimeout.call(this, marker);
-	        }
-	    }
-
-
-
-	}
-	var queue = [];
-	var draining = false;
-	var currentQueue;
-	var queueIndex = -1;
-
-	function cleanUpNextTick() {
-	    if (!draining || !currentQueue) {
-	        return;
-	    }
-	    draining = false;
-	    if (currentQueue.length) {
-	        queue = currentQueue.concat(queue);
-	    } else {
-	        queueIndex = -1;
-	    }
-	    if (queue.length) {
-	        drainQueue();
-	    }
-	}
-
-	function drainQueue() {
-	    if (draining) {
-	        return;
-	    }
-	    var timeout = runTimeout(cleanUpNextTick);
-	    draining = true;
-
-	    var len = queue.length;
-	    while(len) {
-	        currentQueue = queue;
-	        queue = [];
-	        while (++queueIndex < len) {
-	            if (currentQueue) {
-	                currentQueue[queueIndex].run();
-	            }
-	        }
-	        queueIndex = -1;
-	        len = queue.length;
-	    }
-	    currentQueue = null;
-	    draining = false;
-	    runClearTimeout(timeout);
-	}
-
-	process.nextTick = function (fun) {
-	    var args = new Array(arguments.length - 1);
-	    if (arguments.length > 1) {
-	        for (var i = 1; i < arguments.length; i++) {
-	            args[i - 1] = arguments[i];
-	        }
-	    }
-	    queue.push(new Item(fun, args));
-	    if (queue.length === 1 && !draining) {
-	        runTimeout(drainQueue);
-	    }
-	};
-
-	// v8 likes predictible objects
-	function Item(fun, array) {
-	    this.fun = fun;
-	    this.array = array;
-	}
-	Item.prototype.run = function () {
-	    this.fun.apply(null, this.array);
-	};
-	process.title = 'browser';
-	process.browser = true;
-	process.env = {};
-	process.argv = [];
-	process.version = ''; // empty string to avoid regexp issues
-	process.versions = {};
-
-	function noop() {}
-
-	process.on = noop;
-	process.addListener = noop;
-	process.once = noop;
-	process.off = noop;
-	process.removeListener = noop;
-	process.removeAllListeners = noop;
-	process.emit = noop;
-
-	process.binding = function (name) {
-	    throw new Error('process.binding is not supported');
-	};
-
-	process.cwd = function () { return '/' };
-	process.chdir = function (dir) {
-	    throw new Error('process.chdir is not supported');
-	};
-	process.umask = function() { return 0; };
-
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	module.exports = __WEBPACK_EXTERNAL_MODULE_6__;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.on = on;
-	exports.off = off;
-	function on(el, eventName, callback) {
-	  if (el.addEventListener) {
-	    el.addEventListener(eventName, callback, false);
-	  } else if (el.attachEvent) {
-	    el.attachEvent("on" + eventName, function (e) {
-	      callback.call(el, e || window.event);
-	    });
-	  }
-	}
-
-	function off(el, eventName, callback) {
-	  if (el.removeEventListener) {
-	    el.removeEventListener(eventName, callback);
-	  } else if (el.detachEvent) {
-	    el.detachEvent("on" + eventName, callback);
-	  }
-	}
-
-/***/ },
-/* 8 */
-/***/ function(module, exports) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	/**
-	 * @fileOverview Find scroll parent
-	 */
-
-	exports.default = function (node) {
-	  if (!node) {
-	    return document;
-	  }
-
-	  var excludeStaticParent = node.style.position === 'absolute';
-	  var overflowRegex = /(scroll|auto)/;
-	  var parent = node;
-
-	  while (parent) {
-	    if (!parent.parentNode) {
-	      return node.ownerDocument || document;
-	    }
-
-	    var style = window.getComputedStyle(parent);
-	    var position = style.position;
-	    var overflow = style.overflow;
-	    var overflowX = style['overflow-x'];
-	    var overflowY = style['overflow-y'];
-
-	    if (position === 'static' && excludeStaticParent) {
-	      continue;
-	    }
-
-	    if (overflowRegex.test(overflow + overflowX + overflowY)) {
-	      return parent;
-	    }
-
-	    parent = parent.parentNode;
-	  }
-
-	  return node.ownerDocument || node.documentElement || document;
-	};
-
-/***/ },
-/* 9 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.default = debounce;
-	function debounce(func, wait, immediate) {
-	  var timeout = void 0;
-	  var args = void 0;
-	  var context = void 0;
-	  var timestamp = void 0;
-	  var result = void 0;
-
-	  var later = function later() {
-	    var last = +new Date() - timestamp;
-
-	    if (last < wait && last >= 0) {
-	      timeout = setTimeout(later, wait - last);
-	    } else {
-	      timeout = null;
-	      if (!immediate) {
-	        result = func.apply(context, args);
-	        if (!timeout) {
-	          context = args = null;
-	        }
-	      }
-	    }
-	  };
-
-	  return function debounced() {
-	    context = this;
-	    args = arguments;
-	    timestamp = +new Date();
-
-	    var callNow = immediate && !timeout;
-	    if (!timeout) {
-	      timeout = setTimeout(later, wait);
-	    }
-
-	    if (callNow) {
-	      result = func.apply(context, args);
-	      context = args = null;
-	    }
-
-	    return result;
-	  };
-	}
-
-/***/ },
-/* 10 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-	exports.default = throttle;
-	/*eslint-disable */
-	function throttle(fn, threshhold, scope) {
-	  threshhold || (threshhold = 250);
-	  var last, deferTimer;
-	  return function () {
-	    var context = scope || this;
-
-	    var now = +new Date(),
-	        args = arguments;
-	    if (last && now < last + threshhold) {
-	      // hold on to it
-	      clearTimeout(deferTimer);
-	      deferTimer = setTimeout(function () {
-	        last = now;
-	        fn.apply(context, args);
-	      }, threshhold);
-	    } else {
-	      last = now;
-	      fn.apply(context, args);
-	    }
-	  };
-	}
-
-/***/ },
-/* 11 */
-/***/ function(module, exports, __webpack_require__) {
-
-	'use strict';
-
-	Object.defineProperty(exports, "__esModule", {
-	  value: true
-	});
-
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-	var _index = __webpack_require__(4);
-
-	var _index2 = _interopRequireDefault(_index);
-
-	var _react = __webpack_require__(2);
-
-	var _react2 = _interopRequireDefault(_react);
-
-	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
-
-	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-	var getDisplayName = function getDisplayName(WrappedComponent) {
-	  return WrappedComponent.displayName || WrappedComponent.name || 'Component';
-	};
-
-	exports.default = function () {
-	  var options = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
-	  return function lazyload(WrappedComponent) {
-	    return function (_Component) {
-	      _inherits(LazyLoadDecorated, _Component);
-
-	      function LazyLoadDecorated() {
-	        _classCallCheck(this, LazyLoadDecorated);
-
-	        var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(LazyLoadDecorated).call(this));
-
-	        _this.displayName = 'LazyLoad' + getDisplayName(WrappedComponent);
-	        return _this;
-	      }
-
-	      _createClass(LazyLoadDecorated, [{
-	        key: 'render',
-	        value: function render() {
-	          return _react2.default.createElement(
-	            _index2.default,
-	            options,
-	            _react2.default.createElement(WrappedComponent, this.props)
-	          );
-	        }
-	      }]);
-
-	      return LazyLoadDecorated;
-	    }(_react.Component);
-	  };
-	};
-
-/***/ },
-/* 12 */
-/***/ function(module, exports, __webpack_require__) {
-
 	var __WEBPACK_AMD_DEFINE_ARRAY__, __WEBPACK_AMD_DEFINE_RESULT__;/*!
 	  Copyright (c) 2016 Jed Watson.
 	  Licensed under the MIT License (MIT), see
@@ -1847,7 +1240,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 13 */
+/* 5 */
 /***/ function(module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
@@ -1896,7 +1289,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = addEvent;
 
 /***/ },
-/* 14 */
+/* 6 */
 /***/ function(module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
@@ -1913,7 +1306,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = removeEvent;
 
 /***/ },
-/* 15 */
+/* 7 */
 /***/ function(module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
@@ -1971,6 +1364,55 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 
 	exports.default = debounceEventHandler;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	/**
+	 * Apply styles to an element with an object.
+	 */
+	var applyStyles = exports.applyStyles = function applyStyles(styles, node) {
+	    var noValue = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+
+	    if (styles && node) {
+	        for (var s in styles) {
+	            if (styles.hasOwnProperty(s)) {
+	                node.style[s] = !noValue ? styles[s] : null;
+	            }
+	        }
+	    }
+	};
+
+	var getClassAsArray = exports.getClassAsArray = function getClassAsArray(el) {
+	    if (!el) {
+	        return [];
+	    }
+	    var originalClass = el.className;
+	    var originalClassArray = originalClass.split(' ');
+	    return originalClassArray;
+	};
+
+	var addClassFromArray = exports.addClassFromArray = function addClassFromArray(el, arr) {
+	    if (el) {
+	        el.className = arr.join(' ').trim();
+	    }
+	};
+
+	var pushUniqueStringToArray = exports.pushUniqueStringToArray = function pushUniqueStringToArray(arr, string) {
+	    if (Array.isArray(arr) && !arr.includes(string)) {
+	        arr.push(string);
+	    }
+	};
+
+	var removeStringFromArray = exports.removeStringFromArray = function removeStringFromArray(arr, string) {
+	    if (Array.isArray(arr) && arr.includes(string)) {
+	        arr.splice(arr.indexOf(string), 1);
+	    }
+	};
 
 /***/ }
 /******/ ])

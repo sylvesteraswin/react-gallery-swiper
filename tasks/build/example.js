@@ -6,5 +6,5 @@ import path from 'path';
 taskDir(gulp, path.join(__dirname, 'example'));
 
 module.exports = (callback) => {
-    runSequence('build:example:clean', 'build:example:babel', 'build:example:stylecopy', callback);
+    runSequence('build:example:clean', 'build:example:babel', 'build:example:stylecopy', 'build:example:videostylecopy', callback);
 };

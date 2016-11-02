@@ -1,7 +1,6 @@
 /*eslint-disable no-unused-vars*/
 import React, { Component, PropTypes } from 'react';
 import Swipeable from 'react-swipeable';
-import LazyLoad from 'react-lazyload';
 /*eslint-enable no-unused-vars*/
 import classnames from 'classnames';
 
@@ -9,14 +8,27 @@ import addEvent from './utils/add-event-listener';
 import removeEvent from './utils/remove-event-listener';
 import debounce from './utils/debounce-event-handler';
 
+import {
+    getClassAsArray,
+    removeStringFromArray,
+    pushUniqueStringToArray,
+    addClassFromArray,
+} from './utils/attr-helpers';
+
 const BASE_CLASS = 'zvui-gallery-swiper';
 const LEFT_ARROW = 37;
 const RIGHT_ARROW = 39;
 const DEBOUNCE_INTERVAL = 500;
 
+const NAN_IMG = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+const LOADED_CLS = 'loaded';
+const NOT_LOADED_CLS = 'notloaded';
+const ANIMATE_CLS = 'animate';
+
 class GallerySwiper extends Component {
     state = {
         currentIndex: 0,
+        slides: [],
         thumbsTranslateX: 0,
         thumbsTranslateY: 0,
         offsetPercentage: 0,
@@ -25,6 +37,9 @@ class GallerySwiper extends Component {
         thumbnailWidth: 0,
         thumbnailHeight: 0,
         events: {},
+        lazyLoad: {
+            thumbnails: false,
+        },
     };
 
     componentWillReceiveProps = (nextProps) => {
@@ -96,6 +111,7 @@ class GallerySwiper extends Component {
     componentWillMount = () => {
         const {
             startIndex,
+            lazyLoad,
         } = this.props;
 
         this.setState({
@@ -104,6 +120,13 @@ class GallerySwiper extends Component {
 
         this._slideLeft = debounce(this._slideLeft, DEBOUNCE_INTERVAL, true);
         this._slideRight = debounce(this._slideRight, DEBOUNCE_INTERVAL, true);
+
+        if (lazyLoad) {
+            setTimeout(() => {
+                this._loadThumbnails();
+                this._loadMainImage();
+            }, 100);
+        }
     };
 
     componentDidMount = () => {
@@ -177,10 +200,90 @@ class GallerySwiper extends Component {
             style: {
                 transition: 'transform .3s ease-out',
             },
+        }, () => {
+            setTimeout(() => {
+                this._loadMainImage();
+            }, 100);
         });
     };
 
     whereAmI = () => this.state.currentIndex;
+
+    _loadMainImage = () => {
+        const {
+            lazyLoad,
+        } = this.props;
+
+        if (!lazyLoad) {
+            return false;
+        }
+
+        const index = this.whereAmI();
+
+        const elImg = this[`_galleryImage-${index}`];
+        const elWrap = this[`_gallerySlide-${index}`];
+
+        if (elImg && (elImg.nodeName.toLowerCase() === 'img')) {
+            const shouldLoad = (elImg.className.indexOf(NOT_LOADED_CLS) >= 0);
+            const src = elImg.getAttribute('data-src');
+            if (shouldLoad && src) {
+                const img = new Image();
+                img.src = src;
+                elWrap.appendChild(img);
+                img.onload = () => {
+                    const cls = getClassAsArray(img);
+                    pushUniqueStringToArray(cls, LOADED_CLS);
+                    addClassFromArray(img, cls);
+                    // img.className = LOADED_CLS;
+                    setTimeout(() => {
+                        elImg.className = LOADED_CLS;
+                    }, 500);
+                };
+            }
+        }
+    };
+
+    _loadImage = (img, index, images) => {
+        const image = new Image();
+        const src = img.getAttribute('data-src');
+
+        image.onload = function() {
+            img.src = src;
+            const cls = getClassAsArray(img);
+
+            removeStringFromArray(cls, NOT_LOADED_CLS);
+            pushUniqueStringToArray(cls, LOADED_CLS);
+            addClassFromArray(img, cls);
+        };
+        image.src = src;
+
+        if (index === images.length) {
+            this.setState({
+                lazyLoad: {
+                    thumbnails: true,
+                },
+            });
+        }
+    };
+
+    _loadThumbnails = () => {
+        const {
+            lazyLoad: {
+                thumbnails = false,
+            } = {},
+        } = this.state;
+
+        if (thumbnails) {
+            return false;
+        }
+
+        const thumbs = this._gallerySwiperThumbnails;
+
+        if (thumbs) {
+            const images = thumbs.querySelectorAll('img');
+            images.forEach(this._loadImage);
+        }
+    };
 
     _setThumbsTranslate = (thumbsTranslate) => {
         const {
@@ -336,13 +439,13 @@ class GallerySwiper extends Component {
                 });
             }
 
-            if (this._gallerySwiperThumbnail) {
+            if (this._gallerySwiperThumbnails) {
                 this.setState({
                     thumbnailWidth: this._gallerySwiper.offsetWidth,
                     thumbnailHeight: this._gallerySwiper.offsetHeight,
                 });
             }
-        }, 500);
+        }, 100);
     };
 
     _handleKeyDown = (event) => {
@@ -495,29 +598,46 @@ class GallerySwiper extends Component {
         }, 0);
     };
 
-    _renderItem = (img) => {
+    _renderItem = (img, index) => {
         const {
             onImageError = this._handleImageError,
             onImageLoad,
+            lazyLoad,
+            lazyLoadAnimation = false,
+            aspectRatio,
         } = this.props;
 
         const {
-            srcSet,
             sizes,
+            thumbnail,
             original,
             originalAlt = '',
         } = img;
 
+        const classes = classnames({
+            [NOT_LOADED_CLS]: lazyLoad,
+            [ANIMATE_CLS]: lazyLoadAnimation,
+            [LOADED_CLS]: !lazyLoad,
+        })
+
+        const imgProps = {
+            className: classes,
+            src: lazyLoad ? thumbnail : original,
+            ref: i => this[`_galleryImage-${index}`] = i,
+            'data-src': lazyLoad ? original : '',
+            alt: originalAlt,
+            onLoad: onImageLoad,
+            onError: onImageError,
+            size: sizes,
+        };
+
         return (
             <div
-                className={`${BASE_CLASS}-slide-image`}>
+                className={`${BASE_CLASS}-slide-image`}
+                ref={i => this[`_gallerySlide-${index}`] = i}>
+                <div className={classnames('aspectRatio', `z--${aspectRatio}` )} />
                 <img
-                    src={original}
-                    alt={originalAlt}
-                    srcSet={srcSet}
-                    size={sizes}
-                    onLoad={onImageLoad}
-                    onError={onImageError}
+                    {...imgProps}
                     />
             </div>
         );
@@ -530,11 +650,28 @@ class GallerySwiper extends Component {
             onThumbnailError = this._handleImageError,
         } = img;
 
+        const {
+            lazyLoad = false,
+            lazyLoadAnimation = false,
+        } = this.props;
+
+        const classes = classnames({
+            [NOT_LOADED_CLS]: lazyLoad,
+            [ANIMATE_CLS]: lazyLoadAnimation,
+            [LOADED_CLS]: !lazyLoad,
+        });
+
+        const imgProps = {
+            className: classes,
+            src: lazyLoad ? NAN_IMG : thumbnail,
+            'data-src': lazyLoad ? thumbnail : '',
+            alt: thumbnailAlt,
+            onError: onThumbnailError,
+        };
+
         return (
             <img
-                src={thumbnail}
-                alt={thumbnailAlt}
-                onError={onThumbnailError}
+                {...imgProps}
                 />
         );
     };
@@ -663,6 +800,11 @@ class GallerySwiper extends Component {
         return translateX;
     };
 
+    getDimensions = () => ({
+        width: this.state.galleryWidth,
+        height: this.state.galleryHeight,
+    });
+
     render = () => {
         const {
             currentIndex,
@@ -681,6 +823,7 @@ class GallerySwiper extends Component {
             infinite,
             onClick,
             thumbnailPosition,
+            aspectRatio,
             renderItem: customRenderItem,
             renderThumb: customRenderThumb,
         } = this.props;
@@ -712,7 +855,7 @@ class GallerySwiper extends Component {
                     style={Object.assign(this._getSlideStyle(index), slideTransformStyle)}
                     onClick={event => onClick.call(this, index, event)}
                     >
-                    {renderItem(img)}
+                    {renderItem(img, index)}
                 </div>
             );
 
@@ -730,6 +873,7 @@ class GallerySwiper extends Component {
                         onTouchStart={event => this._handleThumbnailClick.call(this, index, event)}
                         onClick={event => this._handleThumbnailClick.call(this, index, event)}
                         >
+                        <div className={classnames('aspectRatio', `z--${aspectRatio}`)} />
                         {renderThumb(img)}
                     </a>
                 );
@@ -743,7 +887,8 @@ class GallerySwiper extends Component {
                         className={classnames(`${BASE_CLASS}-bullet`, {
                             active: (currentIndex === index),
                         })}
-                        onTouchStart={event => this._handleBulletClick.call(this, index, event)}
+                        onTouchStart=
+                        {event => this._handleBulletClick.call(this, index, event)}
                         onClick={event => this._handleBulletClick.call(this, index, event)}
                         >
                         <span>
@@ -847,7 +992,7 @@ class GallerySwiper extends Component {
                         showThumbnails &&
                         <div
                             className={classnames(`${BASE_CLASS}-thumbnails`)}
-                            ref={i => this._gallerySwiperThumbnail = i}
+                            ref={i => this._gallerySwiperThumbnails = i}
                             style={(thumbnailPosition === 'Y') ? {
                                 height: galleryHeight,
                             } : {}}
@@ -869,7 +1014,19 @@ class GallerySwiper extends Component {
 GallerySwiper.propTypes = {
     images: PropTypes.array.isRequired,
     showNav: PropTypes.bool,
+    aspectRatio: PropTypes.oneOf([
+        'square',
+        '3x4',
+        '4x6',
+        '5x7',
+        '8x10',
+        '4x3',
+        '6x4',
+        '7x5',
+        '10x8',
+    ]),
     lazyLoad: PropTypes.bool,
+    lazyLoadAnimation: PropTypes.bool,
     infinite: PropTypes.bool,
     showIndex: PropTypes.bool,
     showBullets: PropTypes.bool,
@@ -896,7 +1053,9 @@ GallerySwiper.propTypes = {
 GallerySwiper.defaultProps = {
     images: [],
     showNav: true,
+    aspectRatio: 'square',
     lazyLoad: false,
+    lazyLoadAnimation: false,
     infinite: true,
     showIndex: false,
     showBullets: false,

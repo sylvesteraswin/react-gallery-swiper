@@ -11,6 +11,45 @@ $base-class: zvui-gallery-swiper;
 .#{$base-class} {
     @include vendor-prefix('user-select', none);
 
+    .aspectRatio {
+        position: relative;
+        width: 100%;
+        margin: 0 auto;
+        display: block;
+        &.z--square {
+            padding-top: 100%;
+        }
+        &.z--3x4 {
+            padding-top: 133.33333333%;
+        }
+        &.z--4x6 {
+            padding-top: 150%;
+        }
+        &.z--5x7 {
+            padding-top: 140%;
+        }
+        &.z--8x10 {
+            padding-top: 125%;
+        }
+        &.z--4x3 {
+            padding-top: 75%;
+        }
+        &.z--6x4 {
+            padding-top: 66.66666667%;
+        }
+        &.z--7x5 {
+            padding-top: 71.42857143%;
+        }
+        &.z--10x8 {
+            padding-top: 80%;
+        }
+    }
+
+    @keyframes spinner {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
     &-content {
         top: 0;
         display: flex;
@@ -25,6 +64,7 @@ $base-class: zvui-gallery-swiper;
         }
     }
     &-slides-wrapper {
+        flex-grow: 1;
         position: relative;
         .#{$base-class} {
             &-navigation {
@@ -121,8 +161,28 @@ $base-class: zvui-gallery-swiper;
         &.center {
             position: relative;
         }
+
         img {
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            transition: opacity .5s linear;
+            opacity: 0;
+            &.notloaded {
+                &.animate {
+                    filter: blur(50px);
+                    opacity: 1;
+                    /* this is needed so Safari keeps sharp edges */
+                    transform: scale(1);
+                }
+            }
+            &.loaded {
+                opacity: 1;
+            }
         }
     }
 
@@ -189,9 +249,23 @@ $base-class: zvui-gallery-swiper;
     &-thumbnails {
         overflow: hidden;
         padding: 5px 0;
+        box-sizing: border-box;
         display: none;
         @media #{$desktop} {
             display: block;
+        }
+        .notloaded {
+            &.animate {
+                border-radius: 50%;
+                border: 4px solid rgba(230, 96, 0, 0.25) !important;
+                width: 20px;
+                height: 20px;
+                animation: spinner 1s linear .1s infinite;
+                border-top-color: rgb(230, 96, 0) !important;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%);
+            }
         }
         &-wrapper {
             cursor: pointer;
@@ -204,11 +278,20 @@ $base-class: zvui-gallery-swiper;
     &-thumbnail {
         display: inline-block;
         padding-right: 5px;
+        width: 100%;
+        overflow: hidden;
+        position: relative;
         img {
-            border: 2px solid transparent;
-            transition: border .3s ease-out;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 80px;
+            height: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            transition: border .3s ease-out;
+            border: 2px solid transparent;
+            box-sizing: border-box;
         }
 
         &.active {
@@ -222,12 +305,13 @@ $base-class: zvui-gallery-swiper;
         .#{$base-class} {
             &-thumbnails {
                 order: 1;
-                padding: 0 5px;
+                padding: 0 10px 0 0;
                 flex-basis: 8em;
             }
             &-thumbnail {
                 display: block;
-                padding-right: 0;
+                padding: 0;
+                margin-bottom: 10px;
             }
         }
     }
