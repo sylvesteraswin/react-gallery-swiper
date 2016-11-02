@@ -28,7 +28,7 @@ class App extends Component {
             thumbnailAlt: 'I am the thumbnail for the featured image',
         }, {
             original: 'http://c5.staticflickr.com/1/292/19003529492_214a7e3777_h.jpg',
-            thumbnail: 'http://c5.staticflickr.com/1/292/19003529492_226031f2c1_n.jpg'
+            thumbnail: 'http://c5.staticflickr.com/1/292/19003529492_226031f2c1_n.jpg',
         }, {
             original: 'http://c6.staticflickr.com/4/3802/19009038565_c197845618_h.jpg',
             thumbnail: 'http://c6.staticflickr.com/4/3802/19009038565_17e2e21b22_n.jpg'
@@ -73,6 +73,9 @@ class App extends Component {
                     onClick={this._onImageClick}
                     onThumbnailHover={this._onThumbnailHover}
                     onArrowClick={this._onArrowClick}
+                    lazyLoad={true}
+                    lazyLoadAnimation={true}
+                    aspectRatio={'6x4'}
                     thumbnailPosition='Y'
                     />
             </section>
