@@ -104,6 +104,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }return obj;
 	}
 
+	function _toConsumableArray(arr) {
+	    if (Array.isArray(arr)) {
+	        for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+	            arr2[i] = arr[i];
+	        }return arr2;
+	    } else {
+	        return Array.from(arr);
+	    }
+	}
+
 	function _classCallCheck(instance, Constructor) {
 	    if (!(instance instanceof Constructor)) {
 	        throw new TypeError("Cannot call a class as a function");
@@ -352,7 +362,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            if (thumbs) {
 	                var images = thumbs.querySelectorAll('img');
-	                images.forEach(_this._loadImage);
+	                [].concat(_toConsumableArray(images)).forEach(_this._loadImage);
 	            }
 	        }, _this._setThumbsTranslate = function (thumbsTranslate) {
 	            var thumbnailPosition = _this.props.thumbnailPosition;
@@ -826,7 +836,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    onClick: function onClick(event) {
 	                        return _onClick.call(_this, index, event);
 	                    }
-	                }, renderItem(img, index));
+	                }, renderItem.call(_this, img, index));
 
 	                slides.push(slide);
 
@@ -848,7 +858,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        onClick: function onClick(event) {
 	                            return _this._handleThumbnailClick.call(_this, index, event);
 	                        }
-	                    }, _react2.default.createElement('div', { className: (0, _classnames4.default)('aspectRatio', 'z--' + aspectRatio) }), renderThumb(img));
+	                    }, _react2.default.createElement('div', { className: (0, _classnames4.default)('aspectRatio', 'z--' + aspectRatio) }), renderThumb.call(_this, img));
 	                    thumbnails.push(thumbnail);
 	                }
 

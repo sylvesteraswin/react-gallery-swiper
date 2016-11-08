@@ -281,7 +281,7 @@ class GallerySwiper extends Component {
 
         if (thumbs) {
             const images = thumbs.querySelectorAll('img');
-            images.forEach(this._loadImage);
+            [...images].forEach(this._loadImage);
         }
     };
 
@@ -618,7 +618,7 @@ class GallerySwiper extends Component {
             [NOT_LOADED_CLS]: lazyLoad,
             [ANIMATE_CLS]: lazyLoadAnimation,
             [LOADED_CLS]: !lazyLoad,
-        })
+        });
 
         const imgProps = {
             className: classes,
@@ -855,7 +855,7 @@ class GallerySwiper extends Component {
                     style={Object.assign(this._getSlideStyle(index), slideTransformStyle)}
                     onClick={event => onClick.call(this, index, event)}
                     >
-                    {renderItem(img, index)}
+                    {renderItem.call(this, img, index)}
                 </div>
             );
 
@@ -874,7 +874,7 @@ class GallerySwiper extends Component {
                         onClick={event => this._handleThumbnailClick.call(this, index, event)}
                         >
                         <div className={classnames('aspectRatio', `z--${aspectRatio}`)} />
-                        {renderThumb(img)}
+                        {renderThumb.call(this, img)}
                     </a>
                 );
                 thumbnails.push(thumbnail);
