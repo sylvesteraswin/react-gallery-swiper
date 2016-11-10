@@ -124,7 +124,7 @@ class GallerySwiper extends Component {
         if (lazyLoad) {
             setTimeout(() => {
                 this._loadThumbnails();
-                this._loadMainImage();
+                // this._loadMainImage();
             }, 100);
         }
     };
@@ -615,16 +615,16 @@ class GallerySwiper extends Component {
         } = img;
 
         const classes = classnames({
-            [NOT_LOADED_CLS]: lazyLoad,
+            [NOT_LOADED_CLS]: lazyLoad && index !== 0,
             [ANIMATE_CLS]: lazyLoadAnimation,
-            [LOADED_CLS]: !lazyLoad,
+            [LOADED_CLS]: !lazyLoad || index === 0,
         });
 
         const imgProps = {
             className: classes,
-            src: lazyLoad ? thumbnail : original,
+            src: (lazyLoad && index !== 0) ? thumbnail : original,
             ref: i => this[`_galleryImage-${index}`] = i,
-            'data-src': lazyLoad ? original : '',
+            'data-src': (lazyLoad && index !== 0) ? original : '',
             alt: originalAlt,
             onLoad: onImageLoad,
             onError: onImageError,
