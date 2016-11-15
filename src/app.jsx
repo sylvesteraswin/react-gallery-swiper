@@ -77,6 +77,7 @@ class App extends Component {
                     lazyLoadAnimation={true}
                     aspectRatio={'6x4'}
                     thumbnailPosition='Y'
+                    startIndex={3}
                     />
             </section>
         );
