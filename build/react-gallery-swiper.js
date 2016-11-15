@@ -618,21 +618,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var _this$props5$lazyLoad = _this$props5.lazyLoadAnimation;
 	            var lazyLoadAnimation = _this$props5$lazyLoad === undefined ? false : _this$props5$lazyLoad;
 	            var aspectRatio = _this$props5.aspectRatio;
+	            var startIndex = _this$props5.startIndex;
 	            var sizes = img.sizes;
 	            var thumbnail = img.thumbnail;
 	            var original = img.original;
 	            var _img$originalAlt = img.originalAlt;
 	            var originalAlt = _img$originalAlt === undefined ? '' : _img$originalAlt;
 
-	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad && index !== 0), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad || index === 0), _classnames));
+	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad && index !== startIndex), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad || index === startIndex), _classnames));
 
 	            var imgProps = {
 	                className: classes,
-	                src: lazyLoad && index !== 0 ? thumbnail : original,
+	                src: lazyLoad && index !== startIndex ? thumbnail : original,
 	                ref: function ref(i) {
 	                    return _this['_galleryImage-' + index] = i;
 	                },
-	                'data-src': lazyLoad && index !== 0 ? original : '',
+	                'data-src': lazyLoad && index !== startIndex ? original : '',
 	                alt: originalAlt,
 	                onLoad: onImageLoad,
 	                onError: onImageError,

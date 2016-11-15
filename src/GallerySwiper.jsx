@@ -605,6 +605,7 @@ class GallerySwiper extends Component {
             lazyLoad,
             lazyLoadAnimation = false,
             aspectRatio,
+            startIndex,
         } = this.props;
 
         const {
@@ -615,16 +616,16 @@ class GallerySwiper extends Component {
         } = img;
 
         const classes = classnames({
-            [NOT_LOADED_CLS]: lazyLoad && index !== 0,
+            [NOT_LOADED_CLS]: lazyLoad && index !== startIndex,
             [ANIMATE_CLS]: lazyLoadAnimation,
-            [LOADED_CLS]: !lazyLoad || index === 0,
+            [LOADED_CLS]: !lazyLoad || index === startIndex,
         });
 
         const imgProps = {
             className: classes,
-            src: (lazyLoad && index !== 0) ? thumbnail : original,
+            src: (lazyLoad && index !== startIndex) ? thumbnail : original,
             ref: i => this[`_galleryImage-${index}`] = i,
-            'data-src': (lazyLoad && index !== 0) ? original : '',
+            'data-src': (lazyLoad && index !== startIndex) ? original : '',
             alt: originalAlt,
             onLoad: onImageLoad,
             onError: onImageError,
