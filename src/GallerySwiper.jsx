@@ -59,12 +59,19 @@ class GallerySwiper extends Component {
 
                 if (handleKeyDown) {
                     removeEvent(handleKeyDown);
+                    // Remove state from events
+                    this.setState({
+                        events: Object.assign({}, this.state.events, {
+                            handleKeyDown: null,
+                        }),
+                    });
                 }
-            } else {
+            } else if (!handleKeyDown) {
+                // Add state from events
                 this.setState({
-                    events: {
+                    events: Object.assign({}, this.state.events, {
                         handleKeyDown: addEvent(window, 'keydown', this._handleKeyDown, this),
-                    },
+                    }),
                 });
             }
         }
@@ -112,6 +119,7 @@ class GallerySwiper extends Component {
         const {
             startIndex,
             lazyLoad,
+            lazyLoadAnimation,
         } = this.props;
 
         this.setState({
@@ -124,7 +132,9 @@ class GallerySwiper extends Component {
         if (lazyLoad) {
             setTimeout(() => {
                 this._loadThumbnails();
-                // this._loadMainImage();
+                if (lazyLoadAnimation) {
+                    this._loadMainImage();
+                }
             }, 100);
         }
     };
@@ -169,6 +179,14 @@ class GallerySwiper extends Component {
         }
 
         removeEvent(handleResize);
+
+        // Remove state from events
+        this.setState({
+            events: Object.assign({}, this.state.events, {
+                handleKeyDown: null,
+                handleResize: null,
+            }),
+        });
     };
 
     goTo = (index, event) => {
@@ -208,63 +226,6 @@ class GallerySwiper extends Component {
     };
 
     whereAmI = () => this.state.currentIndex;
-
-    _loadMainImage = () => {
-        const {
-            lazyLoad,
-        } = this.props;
-
-        if (!lazyLoad) {
-            return false;
-        }
-
-        const index = this.whereAmI();
-
-        const elImg = this[`_galleryImage-${index}`];
-        const elWrap = this[`_gallerySlide-${index}`];
-
-        if (elImg && (elImg.nodeName.toLowerCase() === 'img')) {
-            const shouldLoad = (elImg.className.indexOf(NOT_LOADED_CLS) >= 0);
-            const src = elImg.getAttribute('data-src');
-            if (shouldLoad && src) {
-                const img = new Image();
-                img.src = src;
-                elWrap.appendChild(img);
-                img.onload = () => {
-                    const cls = getClassAsArray(img);
-                    pushUniqueStringToArray(cls, LOADED_CLS);
-                    addClassFromArray(img, cls);
-                    // img.className = LOADED_CLS;
-                    setTimeout(() => {
-                        elImg.className = LOADED_CLS;
-                    }, 500);
-                };
-            }
-        }
-    };
-
-    _loadImage = (img, index, images) => {
-        const image = new Image();
-        const src = img.getAttribute('data-src');
-
-        image.onload = function() {
-            img.src = src;
-            const cls = getClassAsArray(img);
-
-            removeStringFromArray(cls, NOT_LOADED_CLS);
-            pushUniqueStringToArray(cls, LOADED_CLS);
-            addClassFromArray(img, cls);
-        };
-        image.src = src;
-
-        if (index === images.length) {
-            this.setState({
-                lazyLoad: {
-                    thumbnails: true,
-                },
-            });
-        }
-    };
 
     _loadThumbnails = () => {
         const {
@@ -598,6 +559,63 @@ class GallerySwiper extends Component {
         }, 0);
     };
 
+    _loadImage = (img, index, images) => {
+        const image = new Image();
+        const src = img.getAttribute('data-src');
+
+        image.onload = function() {
+            img.src = src;
+            const cls = getClassAsArray(img);
+
+            removeStringFromArray(cls, NOT_LOADED_CLS);
+            pushUniqueStringToArray(cls, LOADED_CLS);
+            addClassFromArray(img, cls);
+        };
+        image.src = src;
+
+        if (index === images.length) {
+            this.setState({
+                lazyLoad: {
+                    thumbnails: true,
+                },
+            });
+        }
+    };
+
+    _loadMainImage = () => {
+        const {
+            lazyLoad,
+        } = this.props;
+
+        if (!lazyLoad) {
+            return false;
+        }
+
+        const index = this.whereAmI();
+
+        const elImg = this[`_galleryImage-${index}`];
+        const elWrap = this[`_gallerySlide-${index}`];
+
+        if (elImg && (elImg.nodeName.toLowerCase() === 'img')) {
+            const shouldLoad = (elImg.className.indexOf(NOT_LOADED_CLS) >= 0);
+            const src = elImg.getAttribute('data-src');
+            if (shouldLoad && src) {
+                const img = new Image();
+                img.src = src;
+                elWrap.appendChild(img);
+                img.onload = () => {
+                    const cls = getClassAsArray(img);
+                    pushUniqueStringToArray(cls, LOADED_CLS);
+                    addClassFromArray(img, cls);
+                    // img.className = LOADED_CLS;
+                    setTimeout(() => {
+                        elImg.className = LOADED_CLS;
+                    }, 500);
+                };
+            }
+        }
+    };
+
     _renderItem = (img, index) => {
         const {
             onImageError = this._handleImageError,
@@ -610,22 +628,30 @@ class GallerySwiper extends Component {
 
         const {
             sizes,
-            thumbnail,
             original,
             originalAlt = '',
         } = img;
 
+        let {
+            thumbnail,
+        } = img;
+
+        // This is make sure we should blank instead of blurred image
+        if (!lazyLoadAnimation) {
+            thumbnail = NAN_IMG;
+        }
+
         const classes = classnames({
-            [NOT_LOADED_CLS]: lazyLoad && index !== startIndex,
+            [NOT_LOADED_CLS]: lazyLoad && !(!lazyLoadAnimation && (index === startIndex)),
             [ANIMATE_CLS]: lazyLoadAnimation,
-            [LOADED_CLS]: !lazyLoad || index === startIndex,
+            [LOADED_CLS]: !lazyLoad || (!lazyLoadAnimation && (index === startIndex)),
         });
 
         const imgProps = {
             className: classes,
-            src: (lazyLoad && index !== startIndex) ? thumbnail : original,
+            src: (lazyLoad && !(!lazyLoadAnimation && (index === startIndex))) ? thumbnail : original,
             ref: i => this[`_galleryImage-${index}`] = i,
-            'data-src': (lazyLoad && index !== startIndex) ? original : '',
+            'data-src': (lazyLoad && !(!lazyLoadAnimation && (index === startIndex))) ? original : '',
             alt: originalAlt,
             onLoad: onImageLoad,
             onError: onImageError,
