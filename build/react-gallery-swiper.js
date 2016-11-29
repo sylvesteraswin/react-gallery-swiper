@@ -104,16 +104,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }return obj;
 	}
 
-	function _toConsumableArray(arr) {
-	    if (Array.isArray(arr)) {
-	        for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
-	            arr2[i] = arr[i];
-	        }return arr2;
-	    } else {
-	        return Array.from(arr);
-	    }
-	}
-
 	function _classCallCheck(instance, Constructor) {
 	    if (!(instance instanceof Constructor)) {
 	        throw new TypeError("Cannot call a class as a function");
@@ -141,6 +131,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var NAN_IMG = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 	var LOADED_CLS = 'loaded';
+	var MAIN_IMAGE_IDENTIFIER = 'gallery_image';
 	var NOT_LOADED_CLS = 'notloaded';
 	var ANIMATE_CLS = 'animate';
 
@@ -173,8 +164,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                thumbnails: false
 	            }
 	        }, _this.componentWillReceiveProps = function (nextProps) {
-	            var disableArrowKeys = _this.props.disableArrowKeys;
+	            var _this$props = _this.props;
+	            var disableArrowKeys = _this$props.disableArrowKeys;
+	            var images = _this$props.images;
+	            var lazyLoad = _this$props.lazyLoad;
 	            var newDisableArrowKeys = nextProps.disableArrowKeys;
+	            var newImages = nextProps.images;
+	            var newLazyload = nextProps.lazyLoad;
 
 	            if (disableArrowKeys !== newDisableArrowKeys) {
 	                if (newDisableArrowKeys) {
@@ -198,8 +194,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    });
 	                }
 	            }
+
+	            if (images.length !== newImages.length) {
+	                if (lazyLoad || newLazyload) {
+	                    _this.setState({
+	                        lazyLoad: {
+	                            thumbnails: false
+	                        }
+	                    }, function () {
+	                        _this._resetImages();
+	                    });
+	                }
+	            }
 	        }, _this.componentDidUpdate = function (prevProps, prevState) {
 	            var showThumbnails = prevProps.showThumbnails;
+	            var images = prevProps.images;
 	            var thumbnailWidth = prevState.thumbnailWidth;
 	            var thumbnailHeight = prevState.thumbnailHeight;
 	            var currentIndex = prevState.currentIndex;
@@ -207,43 +216,45 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var stateThumbnailWidth = _this$state.thumbnailWidth;
 	            var stateThumbnailHeight = _this$state.thumbnailHeight;
 	            var stateCurrentIndex = _this$state.currentIndex;
-	            var _this$props = _this.props;
-	            var propsShowthumbnailWidth = _this$props.showThumbnails;
-	            var onSlide = _this$props.onSlide;
+	            var _this$props2 = _this.props;
+	            var propsShowthumbnailWidth = _this$props2.showThumbnails;
+	            var onSlide = _this$props2.onSlide;
+	            var newImages = _this$props2.images;
 
-	            if (thumbnailWidth !== stateThumbnailWidth || thumbnailHeight !== stateThumbnailHeight || showThumbnails !== propsShowthumbnailWidth) {
-	                // Change thumbnail width container when thumbnail width id adjusted
-	                _this._setThumbsTranslate(-_this._getThumbsTranslate((stateCurrentIndex > 0 ? 1 : 0) * stateCurrentIndex));
+	            // just to make sure we select a index below the image length
+
+	            var saneStateCurrentIndex = stateCurrentIndex > newImages.length - 1 ? 0 : stateCurrentIndex;
+	            if (saneStateCurrentIndex !== stateCurrentIndex) {
+	                _this.setState({
+	                    currentIndex: saneStateCurrentIndex
+	                });
 	            }
 
-	            if (currentIndex !== stateCurrentIndex) {
+	            if (thumbnailWidth !== stateThumbnailWidth || thumbnailHeight !== stateThumbnailHeight || showThumbnails !== propsShowthumbnailWidth || images.length !== newImages.length) {
+	                // Change thumbnail width container when thumbnail width id adjusted
+	                _this._setThumbsTranslate(-_this._getThumbsTranslate((saneStateCurrentIndex > 0 ? 1 : 0) * saneStateCurrentIndex));
+	            }
+
+	            if (currentIndex !== saneStateCurrentIndex) {
 	                if (onSlide && typeof onSlide === 'function') {
-	                    onSlide(stateCurrentIndex);
+	                    onSlide(saneStateCurrentIndex);
 	                }
 
 	                _this._updateThumbnailTranslate(prevState);
 	            }
 	        }, _this.componentWillMount = function () {
-	            var _this$props2 = _this.props;
-	            var startIndex = _this$props2.startIndex;
-	            var lazyLoad = _this$props2.lazyLoad;
-	            var lazyLoadAnimation = _this$props2.lazyLoadAnimation;
+	            var _this$props3 = _this.props;
+	            var startIndex = _this$props3.startIndex;
+	            var images = _this$props3.images;
 
 	            _this.setState({
-	                currentIndex: startIndex
+	                currentIndex: startIndex > images.length ? 0 : startIndex
 	            });
 
 	            _this._slideLeft = (0, _debounceEventHandler2.default)(_this._slideLeft, DEBOUNCE_INTERVAL, true);
 	            _this._slideRight = (0, _debounceEventHandler2.default)(_this._slideRight, DEBOUNCE_INTERVAL, true);
 
-	            if (lazyLoad) {
-	                setTimeout(function () {
-	                    _this._loadThumbnails();
-	                    if (lazyLoadAnimation) {
-	                        _this._loadMainImage();
-	                    }
-	                }, 100);
-	            }
+	            _this._updateIfLazyLoad();
 	        }, _this.componentDidMount = function () {
 	            // delay the event handler to make sure we get the correct image offset width and height
 	            _this._handleResize();
@@ -313,7 +324,74 @@ return /******/ (function(modules) { // webpackBootstrap
 	            });
 	        }, _this.whereAmI = function () {
 	            return _this.state.currentIndex;
-	        }, _this._loadThumbnails = function () {
+	        }, _this._updateIfLazyLoad = function () {
+	            var lazyLoad = _this.props.lazyLoad;
+
+	            if (lazyLoad) {
+	                setTimeout(function () {
+	                    _this._lazyLoadThumbnails();
+	                }, 100);
+	                setTimeout(function () {
+	                    _this._loadMainImage();
+	                }, 100);
+	            }
+	        }, _this._getAllThumbsInArray = function () {
+	            var thumbs = _this._gallerySwiperThumbnails;
+	            if (thumbs) {
+	                var images = thumbs.querySelectorAll('img');
+	                return images;
+	            }
+	            return [];
+	        }, _this._resetImages = function () {
+	            var images = _this.props.images;
+	            // Reset all thumbnails to its original state so we can load new images
+
+	            var thumbnails = _this._getAllThumbsInArray();
+	            thumbnails.forEach(function (img) {
+	                var cls = (0, _attrHelpers.getClassAsArray)(img);
+	                img.src = NAN_IMG;
+	                (0, _attrHelpers.removeStringFromArray)(cls, LOADED_CLS);
+	                (0, _attrHelpers.pushUniqueStringToArray)(cls, NOT_LOADED_CLS);
+	                (0, _attrHelpers.addClassFromArray)(img, cls);
+	            });
+	            // Once its reset, fire the loading function to lazy load all thumbnails
+	            _this._updateIfLazyLoad();
+
+	            // This is the hack to remove the loading main images from DOM so the new images can be loaded
+	            var imageWraps = images.reduce(function (result, value, index) {
+	                result.push(_this['_gallerySlide-' + index]);
+	                return result;
+	            }, []);
+
+	            imageWraps.forEach(function (img) {
+	                // This check is to make sure there is a loaded image in the container
+	                var loadedImage = img.lastChild.classList.contains(MAIN_IMAGE_IDENTIFIER);
+	                if (loadedImage) {
+	                    img.removeChild(img.lastChild);
+	                }
+	            });
+	        }, _this._loadThumbnail = function (img, index, images) {
+	            var image = new Image();
+	            var src = img.getAttribute('data-src');
+
+	            image.onload = function () {
+	                img.src = src;
+	                var cls = (0, _attrHelpers.getClassAsArray)(img);
+
+	                (0, _attrHelpers.removeStringFromArray)(cls, NOT_LOADED_CLS);
+	                (0, _attrHelpers.pushUniqueStringToArray)(cls, LOADED_CLS);
+	                (0, _attrHelpers.addClassFromArray)(img, cls);
+	            };
+	            image.src = src;
+
+	            if (index === images.length - 1) {
+	                _this.setState({
+	                    lazyLoad: {
+	                        thumbnails: true
+	                    }
+	                });
+	            }
+	        }, _this._lazyLoadThumbnails = function () {
 	            var _this$state$lazyLoad = _this.state.lazyLoad;
 	            _this$state$lazyLoad = _this$state$lazyLoad === undefined ? {} : _this$state$lazyLoad;
 	            var _this$state$lazyLoad$ = _this$state$lazyLoad.thumbnails;
@@ -323,12 +401,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return false;
 	            }
 
-	            var thumbs = _this._gallerySwiperThumbnails;
-
-	            if (thumbs) {
-	                var images = thumbs.querySelectorAll('img');
-	                [].concat(_toConsumableArray(images)).forEach(_this._loadImage);
-	            }
+	            var images = _this._getAllThumbsInArray();
+	            images.forEach(_this._loadThumbnail);
 	        }, _this._setThumbsTranslate = function (thumbsTranslate) {
 	            var thumbnailPosition = _this.props.thumbnailPosition;
 
@@ -342,9 +416,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            }
 	        }, _this._getThumbsTranslate = function (indexDifference) {
-	            var _this$props3 = _this.props;
-	            var disableThumbnailScroll = _this$props3.disableThumbnailScroll;
-	            var thumbnailPosition = _this$props3.thumbnailPosition;
+	            var _this$props4 = _this.props;
+	            var disableThumbnailScroll = _this$props4.disableThumbnailScroll;
+	            var thumbnailPosition = _this$props4.thumbnailPosition;
 
 	            if (disableThumbnailScroll) {
 	                return 0;
@@ -482,10 +556,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                event.target.src = defaultImage;
 	            }
 	        }, _this._handleMouseOverThumbnail = function (index, event) {
-	            var _this$props4 = _this.props;
-	            var sliderOnThumbnailHover = _this$props4.sliderOnThumbnailHover;
-	            var thumbnailHoverSlideDelay = _this$props4.thumbnailHoverSlideDelay;
-	            var onThumbnailHover = _this$props4.onThumbnailHover;
+	            var _this$props5 = _this.props;
+	            var sliderOnThumbnailHover = _this$props5.sliderOnThumbnailHover;
+	            var thumbnailHoverSlideDelay = _this$props5.thumbnailHoverSlideDelay;
+	            var onThumbnailHover = _this$props5.onThumbnailHover;
 
 	            if (sliderOnThumbnailHover) {
 	                _this.setState({
@@ -572,27 +646,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	                _this.goTo(slideTo);
 	            }, 0);
-	        }, _this._loadImage = function (img, index, images) {
-	            var image = new Image();
-	            var src = img.getAttribute('data-src');
-
-	            image.onload = function () {
-	                img.src = src;
-	                var cls = (0, _attrHelpers.getClassAsArray)(img);
-
-	                (0, _attrHelpers.removeStringFromArray)(cls, NOT_LOADED_CLS);
-	                (0, _attrHelpers.pushUniqueStringToArray)(cls, LOADED_CLS);
-	                (0, _attrHelpers.addClassFromArray)(img, cls);
-	            };
-	            image.src = src;
-
-	            if (index === images.length) {
-	                _this.setState({
-	                    lazyLoad: {
-	                        thumbnails: true
-	                    }
-	                });
-	            }
 	        }, _this._loadMainImage = function () {
 	            var lazyLoad = _this.props.lazyLoad;
 
@@ -615,11 +668,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                        elWrap.appendChild(img);
 	                        img.onload = function () {
 	                            var cls = (0, _attrHelpers.getClassAsArray)(img);
-	                            (0, _attrHelpers.pushUniqueStringToArray)(cls, LOADED_CLS);
-	                            (0, _attrHelpers.addClassFromArray)(img, cls);
 	                            // img.className = LOADED_CLS;
 	                            setTimeout(function () {
-	                                elImg.className = LOADED_CLS;
+	                                (0, _attrHelpers.pushUniqueStringToArray)(cls, LOADED_CLS);
+	                                (0, _attrHelpers.pushUniqueStringToArray)(cls, MAIN_IMAGE_IDENTIFIER);
+	                                (0, _attrHelpers.addClassFromArray)(img, cls);
 	                            }, 500);
 	                        };
 	                    })();
@@ -628,15 +681,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this._renderItem = function (img, index) {
 	            var _classnames;
 
-	            var _this$props5 = _this.props;
-	            var _this$props5$onImageE = _this$props5.onImageError;
-	            var onImageError = _this$props5$onImageE === undefined ? _this._handleImageError : _this$props5$onImageE;
-	            var onImageLoad = _this$props5.onImageLoad;
-	            var lazyLoad = _this$props5.lazyLoad;
-	            var _this$props5$lazyLoad = _this$props5.lazyLoadAnimation;
-	            var lazyLoadAnimation = _this$props5$lazyLoad === undefined ? false : _this$props5$lazyLoad;
-	            var aspectRatio = _this$props5.aspectRatio;
-	            var startIndex = _this$props5.startIndex;
+	            var _this$props6 = _this.props;
+	            var _this$props6$onImageE = _this$props6.onImageError;
+	            var onImageError = _this$props6$onImageE === undefined ? _this._handleImageError : _this$props6$onImageE;
+	            var onImageLoad = _this$props6.onImageLoad;
+	            var lazyLoad = _this$props6.lazyLoad;
+	            var _this$props6$lazyLoad = _this$props6.lazyLoadAnimation;
+	            var lazyLoadAnimation = _this$props6$lazyLoad === undefined ? false : _this$props6$lazyLoad;
+	            var aspectRatio = _this$props6.aspectRatio;
+	            var startIndex = _this$props6.startIndex;
+	            var images = _this$props6.images;
+
+	            var saneStartIndex = startIndex > images.length - 1 ? 0 : startIndex;
+
 	            var sizes = img.sizes;
 	            var original = img.original;
 	            var _img$originalAlt = img.originalAlt;
@@ -649,15 +706,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                thumbnail = NAN_IMG;
 	            }
 
-	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad && !(!lazyLoadAnimation && index === startIndex)), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad || !lazyLoadAnimation && index === startIndex), _classnames));
+	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad && !(!lazyLoadAnimation && index === saneStartIndex)), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad || !lazyLoadAnimation && index === saneStartIndex), _classnames));
 
 	            var imgProps = {
 	                className: classes,
-	                src: lazyLoad && !(!lazyLoadAnimation && index === startIndex) ? thumbnail : original,
+	                src: lazyLoad && !(!lazyLoadAnimation && index === saneStartIndex) ? thumbnail : original,
 	                ref: function ref(i) {
 	                    return _this['_galleryImage-' + index] = i;
 	                },
-	                'data-src': lazyLoad && !(!lazyLoadAnimation && index === startIndex) ? original : '',
+	                'data-src': lazyLoad && !(!lazyLoadAnimation && index === saneStartIndex) ? original : '',
 	                alt: originalAlt,
 	                onLoad: onImageLoad,
 	                onError: onImageError,
@@ -678,11 +735,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var thumbnailAlt = _img$thumbnailAlt === undefined ? '' : _img$thumbnailAlt;
 	            var _img$onThumbnailError = img.onThumbnailError;
 	            var onThumbnailError = _img$onThumbnailError === undefined ? _this._handleImageError : _img$onThumbnailError;
-	            var _this$props6 = _this.props;
-	            var _this$props6$lazyLoad = _this$props6.lazyLoad;
-	            var lazyLoad = _this$props6$lazyLoad === undefined ? false : _this$props6$lazyLoad;
-	            var _this$props6$lazyLoad2 = _this$props6.lazyLoadAnimation;
-	            var lazyLoadAnimation = _this$props6$lazyLoad2 === undefined ? false : _this$props6$lazyLoad2;
+	            var _this$props7 = _this.props;
+	            var _this$props7$lazyLoad = _this$props7.lazyLoad;
+	            var lazyLoad = _this$props7$lazyLoad === undefined ? false : _this$props7$lazyLoad;
+	            var _this$props7$lazyLoad2 = _this$props7.lazyLoadAnimation;
+	            var lazyLoadAnimation = _this$props7$lazyLoad2 === undefined ? false : _this$props7$lazyLoad2;
 
 	            var classes = (0, _classnames4.default)((_classnames2 = {}, _defineProperty(_classnames2, NOT_LOADED_CLS, lazyLoad), _defineProperty(_classnames2, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames2, LOADED_CLS, !lazyLoad), _classnames2));
 
@@ -721,9 +778,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var currentIndex = _this$state6.currentIndex;
 	            var offsetPercentage = _this$state6.offsetPercentage;
 	            var previousIndex = _this$state6.previousIndex;
-	            var _this$props7 = _this.props;
-	            var infinite = _this$props7.infinite;
-	            var images = _this$props7.images;
+	            var _this$props8 = _this.props;
+	            var infinite = _this$props8.infinite;
+	            var images = _this$props8.images;
 
 	            var baseTraslate = -100 * currentIndex;
 
@@ -816,20 +873,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var galleryHeight = _this$state8.galleryHeight;
 	            var _this$state8$style = _this$state8.style;
 	            var slideTransformStyle = _this$state8$style === undefined ? {} : _this$state8$style;
-	            var _this$props8 = _this.props;
-	            var images = _this$props8.images;
-	            var showThumbnails = _this$props8.showThumbnails;
-	            var showBullets = _this$props8.showBullets;
-	            var showIndex = _this$props8.showIndex;
-	            var indexSeparator = _this$props8.indexSeparator;
-	            var showNav = _this$props8.showNav;
-	            var disableSwipe = _this$props8.disableSwipe;
-	            var infinite = _this$props8.infinite;
-	            var _onClick = _this$props8.onClick;
-	            var thumbnailPosition = _this$props8.thumbnailPosition;
-	            var aspectRatio = _this$props8.aspectRatio;
-	            var customRenderItem = _this$props8.renderItem;
-	            var customRenderThumb = _this$props8.renderThumb;
+	            var _this$props9 = _this.props;
+	            var images = _this$props9.images;
+	            var showThumbnails = _this$props9.showThumbnails;
+	            var showBullets = _this$props9.showBullets;
+	            var showIndex = _this$props9.showIndex;
+	            var indexSeparator = _this$props9.indexSeparator;
+	            var showNav = _this$props9.showNav;
+	            var disableSwipe = _this$props9.disableSwipe;
+	            var infinite = _this$props9.infinite;
+	            var _onClick = _this$props9.onClick;
+	            var thumbnailPosition = _this$props9.thumbnailPosition;
+	            var aspectRatio = _this$props9.aspectRatio;
+	            var customRenderItem = _this$props9.renderItem;
+	            var customRenderThumb = _this$props9.renderThumb;
 
 	            var slides = [];
 	            var thumbnails = [];

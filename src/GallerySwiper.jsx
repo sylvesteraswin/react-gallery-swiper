@@ -22,6 +22,7 @@ const DEBOUNCE_INTERVAL = 500;
 
 const NAN_IMG = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const LOADED_CLS = 'loaded';
+const MAIN_IMAGE_IDENTIFIER = 'gallery_image';
 const NOT_LOADED_CLS = 'notloaded';
 const ANIMATE_CLS = 'animate';
 
@@ -45,10 +46,14 @@ class GallerySwiper extends Component {
     componentWillReceiveProps = (nextProps) => {
         const {
             disableArrowKeys,
+            images,
+            lazyLoad,
         } = this.props;
 
         const {
             disableArrowKeys: newDisableArrowKeys,
+            images: newImages,
+            lazyLoad: newLazyload,
         } = nextProps;
 
         if (disableArrowKeys !== newDisableArrowKeys) {
@@ -75,11 +80,24 @@ class GallerySwiper extends Component {
                 });
             }
         }
+
+        if (images.length !== newImages.length) {
+            if (lazyLoad || newLazyload) {
+                this.setState({
+                    lazyLoad: {
+                        thumbnails: false,
+                    },
+                }, () => {
+                    this._resetImages();
+                });
+            }
+        }
     };
 
     componentDidUpdate = (prevProps, prevState) => {
         const {
             showThumbnails,
+            images,
         } = prevProps;
 
         const {
@@ -97,18 +115,31 @@ class GallerySwiper extends Component {
         const {
             showThumbnails: propsShowthumbnailWidth,
             onSlide,
+            images: newImages,
         } = this.props;
 
-        if ((thumbnailWidth !== stateThumbnailWidth) || (thumbnailHeight !== stateThumbnailHeight) || (showThumbnails !== propsShowthumbnailWidth)) {
+        // just to make sure we select a index below the image length
+        const saneStateCurrentIndex = (stateCurrentIndex > newImages.length - 1) ? 0 : stateCurrentIndex;
+        if (saneStateCurrentIndex !== stateCurrentIndex) {
+            this.setState({
+                currentIndex: saneStateCurrentIndex,
+            });
+        }
+
+        if (
+            (thumbnailWidth !== stateThumbnailWidth) ||
+            (thumbnailHeight !== stateThumbnailHeight) ||
+            (showThumbnails !== propsShowthumbnailWidth) ||
+            (images.length !== newImages.length)) {
             // Change thumbnail width container when thumbnail width id adjusted
             this._setThumbsTranslate(
-                -this._getThumbsTranslate(((stateCurrentIndex > 0) ? 1 : 0) * stateCurrentIndex)
+                -this._getThumbsTranslate(((saneStateCurrentIndex > 0) ? 1 : 0) * saneStateCurrentIndex)
             );
         }
 
-        if (currentIndex !== stateCurrentIndex) {
+        if (currentIndex !== saneStateCurrentIndex) {
             if (onSlide && typeof onSlide === 'function') {
-                onSlide(stateCurrentIndex);
+                onSlide(saneStateCurrentIndex);
             }
 
             this._updateThumbnailTranslate(prevState);
@@ -118,25 +149,17 @@ class GallerySwiper extends Component {
     componentWillMount = () => {
         const {
             startIndex,
-            lazyLoad,
-            lazyLoadAnimation,
+            images,
         } = this.props;
 
         this.setState({
-            currentIndex: startIndex,
+            currentIndex: (startIndex > images.length) ? 0 : startIndex,
         });
 
         this._slideLeft = debounce(this._slideLeft, DEBOUNCE_INTERVAL, true);
         this._slideRight = debounce(this._slideRight, DEBOUNCE_INTERVAL, true);
 
-        if (lazyLoad) {
-            setTimeout(() => {
-                this._loadThumbnails();
-                if (lazyLoadAnimation) {
-                    this._loadMainImage();
-                }
-            }, 100);
-        }
+        this._updateIfLazyLoad();
     };
 
     componentDidMount = () => {
@@ -227,7 +250,85 @@ class GallerySwiper extends Component {
 
     whereAmI = () => this.state.currentIndex;
 
-    _loadThumbnails = () => {
+    _updateIfLazyLoad = () => {
+        const {
+            lazyLoad,
+        } = this.props;
+
+        if (lazyLoad) {
+            setTimeout(() => {
+                this._lazyLoadThumbnails();
+            }, 100);
+            setTimeout(() => {
+                this._loadMainImage();
+            }, 100);
+        }
+    };
+
+    _getAllThumbsInArray = () => {
+        const thumbs = this._gallerySwiperThumbnails;
+        if (thumbs) {
+            const images = thumbs.querySelectorAll('img');
+            return images;
+        }
+        return [];
+    };
+
+    _resetImages = () => {
+        const {
+            images,
+        } = this.props;
+        // Reset all thumbnails to its original state so we can load new images
+        const thumbnails = this._getAllThumbsInArray();
+        thumbnails.forEach((img) => {
+            const cls = getClassAsArray(img);
+            img.src = NAN_IMG;
+            removeStringFromArray(cls, LOADED_CLS);
+            pushUniqueStringToArray(cls, NOT_LOADED_CLS);
+            addClassFromArray(img, cls);
+        });
+        // Once its reset, fire the loading function to lazy load all thumbnails
+        this._updateIfLazyLoad();
+
+        // This is the hack to remove the loading main images from DOM so the new images can be loaded
+        const imageWraps = images.reduce((result, value, index) => {
+            result.push(this[`_gallerySlide-${index}`]);
+            return result;
+        }, []);
+
+        imageWraps.forEach((img) => {
+            // This check is to make sure there is a loaded image in the container
+            const loadedImage = img.lastChild.classList.contains(MAIN_IMAGE_IDENTIFIER);
+            if (loadedImage) {
+                img.removeChild(img.lastChild);
+            }
+        });
+    };
+
+    _loadThumbnail = (img, index, images) => {
+        const image = new Image();
+        const src = img.getAttribute('data-src');
+
+        image.onload = function() {
+            img.src = src;
+            const cls = getClassAsArray(img);
+
+            removeStringFromArray(cls, NOT_LOADED_CLS);
+            pushUniqueStringToArray(cls, LOADED_CLS);
+            addClassFromArray(img, cls);
+        };
+        image.src = src;
+
+        if (index === images.length - 1) {
+            this.setState({
+                lazyLoad: {
+                    thumbnails: true,
+                },
+            });
+        }
+    };
+
+    _lazyLoadThumbnails = () => {
         const {
             lazyLoad: {
                 thumbnails = false,
@@ -238,12 +339,8 @@ class GallerySwiper extends Component {
             return false;
         }
 
-        const thumbs = this._gallerySwiperThumbnails;
-
-        if (thumbs) {
-            const images = thumbs.querySelectorAll('img');
-            [...images].forEach(this._loadImage);
-        }
+        const images = this._getAllThumbsInArray();
+        images.forEach(this._loadThumbnail);
     };
 
     _setThumbsTranslate = (thumbsTranslate) => {
@@ -559,29 +656,6 @@ class GallerySwiper extends Component {
         }, 0);
     };
 
-    _loadImage = (img, index, images) => {
-        const image = new Image();
-        const src = img.getAttribute('data-src');
-
-        image.onload = function() {
-            img.src = src;
-            const cls = getClassAsArray(img);
-
-            removeStringFromArray(cls, NOT_LOADED_CLS);
-            pushUniqueStringToArray(cls, LOADED_CLS);
-            addClassFromArray(img, cls);
-        };
-        image.src = src;
-
-        if (index === images.length) {
-            this.setState({
-                lazyLoad: {
-                    thumbnails: true,
-                },
-            });
-        }
-    };
-
     _loadMainImage = () => {
         const {
             lazyLoad,
@@ -605,11 +679,11 @@ class GallerySwiper extends Component {
                 elWrap.appendChild(img);
                 img.onload = () => {
                     const cls = getClassAsArray(img);
-                    pushUniqueStringToArray(cls, LOADED_CLS);
-                    addClassFromArray(img, cls);
                     // img.className = LOADED_CLS;
                     setTimeout(() => {
-                        elImg.className = LOADED_CLS;
+                        pushUniqueStringToArray(cls, LOADED_CLS);
+                        pushUniqueStringToArray(cls, MAIN_IMAGE_IDENTIFIER);
+                        addClassFromArray(img, cls);
                     }, 500);
                 };
             }
@@ -624,7 +698,10 @@ class GallerySwiper extends Component {
             lazyLoadAnimation = false,
             aspectRatio,
             startIndex,
+            images,
         } = this.props;
+
+        const saneStartIndex = (startIndex > images.length - 1) ? 0 : startIndex;
 
         const {
             sizes,
@@ -642,16 +719,16 @@ class GallerySwiper extends Component {
         }
 
         const classes = classnames({
-            [NOT_LOADED_CLS]: lazyLoad && !(!lazyLoadAnimation && (index === startIndex)),
+            [NOT_LOADED_CLS]: lazyLoad && !(!lazyLoadAnimation && (index === saneStartIndex)),
             [ANIMATE_CLS]: lazyLoadAnimation,
-            [LOADED_CLS]: !lazyLoad || (!lazyLoadAnimation && (index === startIndex)),
+            [LOADED_CLS]: !lazyLoad || (!lazyLoadAnimation && (index === saneStartIndex)),
         });
 
         const imgProps = {
             className: classes,
-            src: (lazyLoad && !(!lazyLoadAnimation && (index === startIndex))) ? thumbnail : original,
+            src: (lazyLoad && !(!lazyLoadAnimation && (index === saneStartIndex))) ? thumbnail : original,
             ref: i => this[`_galleryImage-${index}`] = i,
-            'data-src': (lazyLoad && !(!lazyLoadAnimation && (index === startIndex))) ? original : '',
+            'data-src': (lazyLoad && !(!lazyLoadAnimation && (index === saneStartIndex))) ? original : '',
             alt: originalAlt,
             onLoad: onImageLoad,
             onError: onImageError,
