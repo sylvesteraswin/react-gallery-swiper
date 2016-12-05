@@ -104,6 +104,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }return obj;
 	}
 
+	function _toConsumableArray(arr) {
+	    if (Array.isArray(arr)) {
+	        for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) {
+	            arr2[i] = arr[i];
+	        }return arr2;
+	    } else {
+	        return Array.from(arr);
+	    }
+	}
+
 	function _classCallCheck(instance, Constructor) {
 	    if (!(instance instanceof Constructor)) {
 	        throw new TypeError("Cannot call a class as a function");
@@ -339,7 +349,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var thumbs = _this._gallerySwiperThumbnails;
 	            if (thumbs) {
 	                var images = thumbs.querySelectorAll('img');
-	                return images;
+	                return [].concat(_toConsumableArray(images));
 	            }
 	            return [];
 	        }, _this._resetImages = function () {
@@ -347,15 +357,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	            // Reset all thumbnails to its original state so we can load new images
 
 	            var thumbnails = _this._getAllThumbsInArray();
-	            thumbnails.forEach(function (img) {
-	                var cls = (0, _attrHelpers.getClassAsArray)(img);
-	                img.src = NAN_IMG;
-	                (0, _attrHelpers.removeStringFromArray)(cls, LOADED_CLS);
-	                (0, _attrHelpers.pushUniqueStringToArray)(cls, NOT_LOADED_CLS);
-	                (0, _attrHelpers.addClassFromArray)(img, cls);
-	            });
-	            // Once its reset, fire the loading function to lazy load all thumbnails
-	            _this._updateIfLazyLoad();
+	            if (thumbnails.length) {
+	                thumbnails.forEach(function (img) {
+	                    var cls = (0, _attrHelpers.getClassAsArray)(img);
+	                    img.src = NAN_IMG;
+	                    (0, _attrHelpers.removeStringFromArray)(cls, LOADED_CLS);
+	                    (0, _attrHelpers.pushUniqueStringToArray)(cls, NOT_LOADED_CLS);
+	                    (0, _attrHelpers.addClassFromArray)(img, cls);
+	                });
+
+	                // Once its reset, fire the loading function to lazy load all thumbnails
+	                _this._updateIfLazyLoad();
+	            }
 
 	            // This is the hack to remove the loading main images from DOM so the new images can be loaded
 	            var imageWraps = images.reduce(function (result, value, index) {
@@ -363,13 +376,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return result;
 	            }, []);
 
-	            imageWraps.forEach(function (img) {
-	                // This check is to make sure there is a loaded image in the container
-	                var loadedImage = img.lastChild.classList.contains(MAIN_IMAGE_IDENTIFIER);
-	                if (loadedImage) {
-	                    img.removeChild(img.lastChild);
-	                }
-	            });
+	            if (imageWraps.length) {
+	                imageWraps.forEach(function (img) {
+	                    // This check is to make sure there is a loaded image in the container
+	                    var loadedImage = img.lastChild.classList.contains(MAIN_IMAGE_IDENTIFIER);
+	                    if (loadedImage) {
+	                        img.removeChild(img.lastChild);
+	                    }
+	                });
+	            }
 	        }, _this._loadThumbnail = function (img, index, images) {
 	            var image = new Image();
 	            var src = img.getAttribute('data-src');

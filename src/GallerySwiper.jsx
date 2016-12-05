@@ -269,7 +269,7 @@ class GallerySwiper extends Component {
         const thumbs = this._gallerySwiperThumbnails;
         if (thumbs) {
             const images = thumbs.querySelectorAll('img');
-            return images;
+            return [...images];
         }
         return [];
     };
@@ -280,15 +280,18 @@ class GallerySwiper extends Component {
         } = this.props;
         // Reset all thumbnails to its original state so we can load new images
         const thumbnails = this._getAllThumbsInArray();
-        thumbnails.forEach((img) => {
-            const cls = getClassAsArray(img);
-            img.src = NAN_IMG;
-            removeStringFromArray(cls, LOADED_CLS);
-            pushUniqueStringToArray(cls, NOT_LOADED_CLS);
-            addClassFromArray(img, cls);
-        });
-        // Once its reset, fire the loading function to lazy load all thumbnails
-        this._updateIfLazyLoad();
+        if (thumbnails.length) {
+            thumbnails.forEach((img) => {
+                const cls = getClassAsArray(img);
+                img.src = NAN_IMG;
+                removeStringFromArray(cls, LOADED_CLS);
+                pushUniqueStringToArray(cls, NOT_LOADED_CLS);
+                addClassFromArray(img, cls);
+            });
+
+            // Once its reset, fire the loading function to lazy load all thumbnails
+            this._updateIfLazyLoad();
+        }
 
         // This is the hack to remove the loading main images from DOM so the new images can be loaded
         const imageWraps = images.reduce((result, value, index) => {
@@ -296,13 +299,15 @@ class GallerySwiper extends Component {
             return result;
         }, []);
 
-        imageWraps.forEach((img) => {
-            // This check is to make sure there is a loaded image in the container
-            const loadedImage = img.lastChild.classList.contains(MAIN_IMAGE_IDENTIFIER);
-            if (loadedImage) {
-                img.removeChild(img.lastChild);
-            }
-        });
+        if (imageWraps.length) {
+            imageWraps.forEach((img) => {
+                // This check is to make sure there is a loaded image in the container
+                const loadedImage = img.lastChild.classList.contains(MAIN_IMAGE_IDENTIFIER);
+                if (loadedImage) {
+                    img.removeChild(img.lastChild);
+                }
+            });
+        }
     };
 
     _loadThumbnail = (img, index, images) => {
