@@ -174,13 +174,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                thumbnails: false
 	            }
 	        }, _this.componentWillReceiveProps = function (nextProps) {
-	            var _this$props = _this.props;
-	            var disableArrowKeys = _this$props.disableArrowKeys;
-	            var images = _this$props.images;
-	            var lazyLoad = _this$props.lazyLoad;
-	            var newDisableArrowKeys = nextProps.disableArrowKeys;
-	            var newImages = nextProps.images;
-	            var newLazyload = nextProps.lazyLoad;
+	            var _this$props = _this.props,
+	                disableArrowKeys = _this$props.disableArrowKeys,
+	                images = _this$props.images,
+	                lazyLoad = _this$props.lazyLoad;
+	            var newDisableArrowKeys = nextProps.disableArrowKeys,
+	                newImages = nextProps.images,
+	                newLazyload = nextProps.lazyLoad;
 
 	            if (disableArrowKeys !== newDisableArrowKeys) {
 	                if (newDisableArrowKeys) {
@@ -217,19 +217,19 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	        }, _this.componentDidUpdate = function (prevProps, prevState) {
-	            var showThumbnails = prevProps.showThumbnails;
-	            var images = prevProps.images;
-	            var thumbnailWidth = prevState.thumbnailWidth;
-	            var thumbnailHeight = prevState.thumbnailHeight;
-	            var currentIndex = prevState.currentIndex;
-	            var _this$state = _this.state;
-	            var stateThumbnailWidth = _this$state.thumbnailWidth;
-	            var stateThumbnailHeight = _this$state.thumbnailHeight;
-	            var stateCurrentIndex = _this$state.currentIndex;
-	            var _this$props2 = _this.props;
-	            var propsShowthumbnailWidth = _this$props2.showThumbnails;
-	            var onSlide = _this$props2.onSlide;
-	            var newImages = _this$props2.images;
+	            var showThumbnails = prevProps.showThumbnails,
+	                images = prevProps.images;
+	            var thumbnailWidth = prevState.thumbnailWidth,
+	                thumbnailHeight = prevState.thumbnailHeight,
+	                currentIndex = prevState.currentIndex;
+	            var _this$state = _this.state,
+	                stateThumbnailWidth = _this$state.thumbnailWidth,
+	                stateThumbnailHeight = _this$state.thumbnailHeight,
+	                stateCurrentIndex = _this$state.currentIndex;
+	            var _this$props2 = _this.props,
+	                propsShowthumbnailWidth = _this$props2.showThumbnails,
+	                onSlide = _this$props2.onSlide,
+	                newImages = _this$props2.images;
 
 	            // just to make sure we select a index below the image length
 
@@ -253,9 +253,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _this._updateThumbnailTranslate(prevState);
 	            }
 	        }, _this.componentWillMount = function () {
-	            var _this$props3 = _this.props;
-	            var startIndex = _this$props3.startIndex;
-	            var images = _this$props3.images;
+	            var _this$props3 = _this.props,
+	                startIndex = _this$props3.startIndex,
+	                images = _this$props3.images;
 
 	            _this.setState({
 	                currentIndex: startIndex > images.length ? 0 : startIndex
@@ -286,9 +286,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 	        }, _this.componentWillUnMount = function () {
 	            var disableArrowKeys = _this.props.disableArrowKeys;
-	            var _this$state$events = _this.state.events;
-	            var handleKeyDown = _this$state$events.handleKeyDown;
-	            var handleResize = _this$state$events.handleResize;
+	            var _this$state$events = _this.state.events,
+	                handleKeyDown = _this$state$events.handleKeyDown,
+	                handleResize = _this$state$events.handleResize;
 
 	            if (!disableArrowKeys) {
 	                (0, _removeEventListener2.default)(handleKeyDown);
@@ -409,8 +409,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this._lazyLoadThumbnails = function () {
 	            var _this$state$lazyLoad = _this.state.lazyLoad;
 	            _this$state$lazyLoad = _this$state$lazyLoad === undefined ? {} : _this$state$lazyLoad;
-	            var _this$state$lazyLoad$ = _this$state$lazyLoad.thumbnails;
-	            var thumbnails = _this$state$lazyLoad$ === undefined ? false : _this$state$lazyLoad$;
+	            var _this$state$lazyLoad$ = _this$state$lazyLoad.thumbnails,
+	                thumbnails = _this$state$lazyLoad$ === undefined ? false : _this$state$lazyLoad$;
 
 	            if (thumbnails) {
 	                return false;
@@ -431,17 +431,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	                });
 	            }
 	        }, _this._getThumbsTranslate = function (indexDifference) {
-	            var _this$props4 = _this.props;
-	            var disableThumbnailScroll = _this$props4.disableThumbnailScroll;
-	            var thumbnailPosition = _this$props4.thumbnailPosition;
+	            var _this$props4 = _this.props,
+	                disableThumbnailScroll = _this$props4.disableThumbnailScroll,
+	                thumbnailPosition = _this$props4.thumbnailPosition;
 
 	            if (disableThumbnailScroll) {
 	                return 0;
 	            }
 
-	            var _this$state2 = _this.state;
-	            var thumbnailWidth = _this$state2.thumbnailWidth;
-	            var thumbnailHeight = _this$state2.thumbnailHeight;
+	            var _this$state2 = _this.state,
+	                thumbnailWidth = _this$state2.thumbnailWidth,
+	                thumbnailHeight = _this$state2.thumbnailHeight;
 
 	            if (_this._thumbnails) {
 	                var totalThumbnails = _this._thumbnails.children.length;
@@ -473,10 +473,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            }
 	        }, _this._updateThumbnailTranslate = function (prevState) {
-	            var _this$state3 = _this.state;
-	            var stateCurrentIndex = _this$state3.currentIndex;
-	            var thumbsTranslateX = _this$state3.thumbsTranslateX;
-	            var thumbsTranslateY = _this$state3.thumbsTranslateY;
+	            var _this$state3 = _this.state,
+	                stateCurrentIndex = _this$state3.currentIndex,
+	                thumbsTranslateX = _this$state3.thumbsTranslateX,
+	                thumbsTranslateY = _this$state3.thumbsTranslateY;
 	            var currentIndex = prevState.currentIndex;
 	            var thumbnailPosition = _this.props.thumbnailPosition;
 
@@ -571,10 +571,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                event.target.src = defaultImage;
 	            }
 	        }, _this._handleMouseOverThumbnail = function (index, event) {
-	            var _this$props5 = _this.props;
-	            var sliderOnThumbnailHover = _this$props5.sliderOnThumbnailHover;
-	            var thumbnailHoverSlideDelay = _this$props5.thumbnailHoverSlideDelay;
-	            var onThumbnailHover = _this$props5.onThumbnailHover;
+	            var _this$props5 = _this.props,
+	                sliderOnThumbnailHover = _this$props5.sliderOnThumbnailHover,
+	                thumbnailHoverSlideDelay = _this$props5.thumbnailHoverSlideDelay,
+	                onThumbnailHover = _this$props5.onThumbnailHover;
 
 	            if (sliderOnThumbnailHover) {
 	                _this.setState({
@@ -624,9 +624,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                offsetPercentage: offsetPercentage
 	            });
 	        }, _this._shouldSlideOnSwipe = function () {
-	            var _this$state4 = _this.state;
-	            var offsetPercentage = _this$state4.offsetPercentage;
-	            var isFlick = _this$state4.isFlick;
+	            var _this$state4 = _this.state,
+	                offsetPercentage = _this$state4.offsetPercentage,
+	                isFlick = _this$state4.isFlick;
 
 	            var shouldSlide = Math.abs(offsetPercentage > 30 || isFlick);
 
@@ -696,23 +696,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this._renderItem = function (img, index) {
 	            var _classnames;
 
-	            var _this$props6 = _this.props;
-	            var _this$props6$onImageE = _this$props6.onImageError;
-	            var onImageError = _this$props6$onImageE === undefined ? _this._handleImageError : _this$props6$onImageE;
-	            var onImageLoad = _this$props6.onImageLoad;
-	            var lazyLoad = _this$props6.lazyLoad;
-	            var _this$props6$lazyLoad = _this$props6.lazyLoadAnimation;
-	            var lazyLoadAnimation = _this$props6$lazyLoad === undefined ? false : _this$props6$lazyLoad;
-	            var aspectRatio = _this$props6.aspectRatio;
-	            var startIndex = _this$props6.startIndex;
-	            var images = _this$props6.images;
+	            var _this$props6 = _this.props,
+	                _this$props6$onImageE = _this$props6.onImageError,
+	                onImageError = _this$props6$onImageE === undefined ? _this._handleImageError : _this$props6$onImageE,
+	                onImageLoad = _this$props6.onImageLoad,
+	                lazyLoad = _this$props6.lazyLoad,
+	                _this$props6$lazyLoad = _this$props6.lazyLoadAnimation,
+	                lazyLoadAnimation = _this$props6$lazyLoad === undefined ? false : _this$props6$lazyLoad,
+	                aspectRatio = _this$props6.aspectRatio,
+	                startIndex = _this$props6.startIndex,
+	                images = _this$props6.images;
 
 	            var saneStartIndex = startIndex > images.length - 1 ? 0 : startIndex;
 
-	            var sizes = img.sizes;
-	            var original = img.original;
-	            var _img$originalAlt = img.originalAlt;
-	            var originalAlt = _img$originalAlt === undefined ? '' : _img$originalAlt;
+	            var sizes = img.sizes,
+	                original = img.original,
+	                _img$originalAlt = img.originalAlt,
+	                originalAlt = _img$originalAlt === undefined ? '' : _img$originalAlt;
 	            var thumbnail = img.thumbnail;
 
 	            // This is make sure we should blank instead of blurred image
@@ -744,17 +744,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this._renderThumb = function (img) {
 	            var _classnames2;
 
-	            var _img$thumbnail = img.thumbnail;
-	            var thumbnail = _img$thumbnail === undefined ? '' : _img$thumbnail;
-	            var _img$thumbnailAlt = img.thumbnailAlt;
-	            var thumbnailAlt = _img$thumbnailAlt === undefined ? '' : _img$thumbnailAlt;
-	            var _img$onThumbnailError = img.onThumbnailError;
-	            var onThumbnailError = _img$onThumbnailError === undefined ? _this._handleImageError : _img$onThumbnailError;
-	            var _this$props7 = _this.props;
-	            var _this$props7$lazyLoad = _this$props7.lazyLoad;
-	            var lazyLoad = _this$props7$lazyLoad === undefined ? false : _this$props7$lazyLoad;
-	            var _this$props7$lazyLoad2 = _this$props7.lazyLoadAnimation;
-	            var lazyLoadAnimation = _this$props7$lazyLoad2 === undefined ? false : _this$props7$lazyLoad2;
+	            var _img$thumbnail = img.thumbnail,
+	                thumbnail = _img$thumbnail === undefined ? '' : _img$thumbnail,
+	                _img$thumbnailAlt = img.thumbnailAlt,
+	                thumbnailAlt = _img$thumbnailAlt === undefined ? '' : _img$thumbnailAlt,
+	                _img$onThumbnailError = img.onThumbnailError,
+	                onThumbnailError = _img$onThumbnailError === undefined ? _this._handleImageError : _img$onThumbnailError;
+	            var _this$props7 = _this.props,
+	                _this$props7$lazyLoad = _this$props7.lazyLoad,
+	                lazyLoad = _this$props7$lazyLoad === undefined ? false : _this$props7$lazyLoad,
+	                _this$props7$lazyLoad2 = _this$props7.lazyLoadAnimation,
+	                lazyLoadAnimation = _this$props7$lazyLoad2 === undefined ? false : _this$props7$lazyLoad2;
 
 	            var classes = (0, _classnames4.default)((_classnames2 = {}, _defineProperty(_classnames2, NOT_LOADED_CLS, lazyLoad), _defineProperty(_classnames2, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames2, LOADED_CLS, !lazyLoad), _classnames2));
 
@@ -769,9 +769,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            return _react2.default.createElement('img', imgProps);
 	        }, _this._getThumbnailStyle = function () {
 	            var thumbnailPosition = _this.props.thumbnailPosition;
-	            var _this$state5 = _this.state;
-	            var thumbsTranslateX = _this$state5.thumbsTranslateX;
-	            var thumbsTranslateY = _this$state5.thumbsTranslateY;
+	            var _this$state5 = _this.state,
+	                thumbsTranslateX = _this$state5.thumbsTranslateX,
+	                thumbsTranslateY = _this$state5.thumbsTranslateY;
 
 	            var translate3d = void 0;
 
@@ -789,13 +789,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	                transform: translate3d
 	            };
 	        }, _this._getSlideStyle = function (index) {
-	            var _this$state6 = _this.state;
-	            var currentIndex = _this$state6.currentIndex;
-	            var offsetPercentage = _this$state6.offsetPercentage;
-	            var previousIndex = _this$state6.previousIndex;
-	            var _this$props8 = _this.props;
-	            var infinite = _this$props8.infinite;
-	            var images = _this$props8.images;
+	            var _this$state6 = _this.state,
+	                currentIndex = _this$state6.currentIndex,
+	                offsetPercentage = _this$state6.offsetPercentage,
+	                previousIndex = _this$state6.previousIndex;
+	            var _this$props8 = _this.props,
+	                infinite = _this$props8.infinite,
+	                images = _this$props8.images;
 
 	            var baseTraslate = -100 * currentIndex;
 
@@ -838,10 +838,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	            };
 	        }, _this._getTranslateXForTwoSlide = function (index) {
 	            // Infinte swipe when there are only 2 slides
-	            var _this$state7 = _this.state;
-	            var currentIndex = _this$state7.currentIndex;
-	            var offsetPercentage = _this$state7.offsetPercentage;
-	            var previousIndex = _this$state7.previousIndex;
+	            var _this$state7 = _this.state,
+	                currentIndex = _this$state7.currentIndex,
+	                offsetPercentage = _this$state7.offsetPercentage,
+	                previousIndex = _this$state7.previousIndex;
 
 	            var baseTraslate = -100 * currentIndex;
 	            var translateX = baseTraslate + index * 100 + offsetPercentage;
@@ -883,39 +883,39 @@ return /******/ (function(modules) { // webpackBootstrap
 	                height: _this.state.galleryHeight
 	            };
 	        }, _this.render = function () {
-	            var _this$state8 = _this.state;
-	            var currentIndex = _this$state8.currentIndex;
-	            var galleryHeight = _this$state8.galleryHeight;
-	            var _this$state8$style = _this$state8.style;
-	            var slideTransformStyle = _this$state8$style === undefined ? {} : _this$state8$style;
-	            var _this$props9 = _this.props;
-	            var images = _this$props9.images;
-	            var showThumbnails = _this$props9.showThumbnails;
-	            var showBullets = _this$props9.showBullets;
-	            var showIndex = _this$props9.showIndex;
-	            var indexSeparator = _this$props9.indexSeparator;
-	            var showNav = _this$props9.showNav;
-	            var disableSwipe = _this$props9.disableSwipe;
-	            var infinite = _this$props9.infinite;
-	            var _onClick = _this$props9.onClick;
-	            var thumbnailPosition = _this$props9.thumbnailPosition;
-	            var aspectRatio = _this$props9.aspectRatio;
-	            var customRenderItem = _this$props9.renderItem;
-	            var customRenderThumb = _this$props9.renderThumb;
+	            var _this$state8 = _this.state,
+	                currentIndex = _this$state8.currentIndex,
+	                galleryHeight = _this$state8.galleryHeight,
+	                _this$state8$style = _this$state8.style,
+	                slideTransformStyle = _this$state8$style === undefined ? {} : _this$state8$style;
+	            var _this$props9 = _this.props,
+	                images = _this$props9.images,
+	                showThumbnails = _this$props9.showThumbnails,
+	                showBullets = _this$props9.showBullets,
+	                showIndex = _this$props9.showIndex,
+	                indexSeparator = _this$props9.indexSeparator,
+	                showNav = _this$props9.showNav,
+	                disableSwipe = _this$props9.disableSwipe,
+	                infinite = _this$props9.infinite,
+	                _onClick = _this$props9.onClick,
+	                thumbnailPosition = _this$props9.thumbnailPosition,
+	                aspectRatio = _this$props9.aspectRatio,
+	                customRenderItem = _this$props9.renderItem,
+	                customRenderThumb = _this$props9.renderThumb;
 
 	            var slides = [];
 	            var thumbnails = [];
 	            var bullets = [];
 
 	            images.forEach(function (img, index) {
-	                var _img$originalClass = img.originalClass;
-	                var originalClass = _img$originalClass === undefined ? '' : _img$originalClass;
-	                var _img$thumbnailClass = img.thumbnailClass;
-	                var thumbnailClass = _img$thumbnailClass === undefined ? '' : _img$thumbnailClass;
-	                var _img$renderItem = img.renderItem;
-	                var ImgRenderItem = _img$renderItem === undefined ? null : _img$renderItem;
-	                var _img$renderThumb = img.renderThumb;
-	                var ImgRenderThumb = _img$renderThumb === undefined ? null : _img$renderThumb;
+	                var _img$originalClass = img.originalClass,
+	                    originalClass = _img$originalClass === undefined ? '' : _img$originalClass,
+	                    _img$thumbnailClass = img.thumbnailClass,
+	                    thumbnailClass = _img$thumbnailClass === undefined ? '' : _img$thumbnailClass,
+	                    _img$renderItem = img.renderItem,
+	                    ImgRenderItem = _img$renderItem === undefined ? null : _img$renderItem,
+	                    _img$renderThumb = img.renderThumb,
+	                    ImgRenderThumb = _img$renderThumb === undefined ? null : _img$renderThumb;
 
 	                var renderItem = ImgRenderItem || customRenderItem || _this._renderItem;
 	                var renderThumb = ImgRenderThumb || customRenderThumb || _this._renderThumb;
@@ -1124,7 +1124,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    delta: React.PropTypes.number,
 	    preventDefaultTouchmoveEvent: React.PropTypes.bool,
 	    stopPropagation: React.PropTypes.bool,
-	    nodeName: React.PropTypes.string
+	    nodeName: React.PropTypes.string,
+	    trackMouse: React.PropTypes.bool
 	  },
 
 	  getInitialState: function getInitialState() {
@@ -1147,8 +1148,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  calculatePos: function calculatePos(e) {
-	    var x = e.changedTouches[0].clientX;
-	    var y = e.changedTouches[0].clientY;
+	    var x = void 0,
+	        y = void 0;
+	    // If not a touch, determine point from mouse coordinates
+	    if (e.changedTouches) {
+	      x = e.changedTouches[0].clientX;
+	      y = e.changedTouches[0].clientY;
+	    } else {
+	      x = e.clientX;
+	      y = e.clientY;
+	    }
 
 	    var xd = this.state.x - x;
 	    var yd = this.state.y - y;
@@ -1168,23 +1177,27 @@ return /******/ (function(modules) { // webpackBootstrap
 	    };
 	  },
 
-	  touchStart: function touchStart(e) {
-	    if (e.touches.length > 1) {
+	  eventStart: function eventStart(e) {
+	    if (e.touches && e.touches.length > 1) {
 	      return;
 	    }
-
+	    // If not a touch, determine point from mouse coordinates
+	    var touches = e.touches;
+	    if (!touches) {
+	      touches = [{ clientX: e.clientX, clientY: e.clientY }];
+	    }
 	    if (this.props.stopPropagation) e.stopPropagation();
 
 	    this.setState({
 	      start: Date.now(),
-	      x: e.touches[0].clientX,
-	      y: e.touches[0].clientY,
+	      x: touches[0].clientX,
+	      y: touches[0].clientY,
 	      swiping: false
 	    });
 	  },
 
-	  touchMove: function touchMove(e) {
-	    if (!this.state.x || !this.state.y || e.touches.length > 1) {
+	  eventMove: function eventMove(e) {
+	    if (!this.state.x || !this.state.y || e.touches && e.touches.length > 1) {
 	      return;
 	    }
 
@@ -1234,7 +1247,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	  },
 
-	  touchEnd: function touchEnd(e) {
+	  eventEnd: function eventEnd(e) {
 	    if (this.state.swiping) {
 	      var pos = this.calculatePos(e);
 
@@ -1264,9 +1277,12 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	  render: function render() {
 	    var newProps = _extends({}, this.props, {
-	      onTouchStart: this.touchStart,
-	      onTouchMove: this.touchMove,
-	      onTouchEnd: this.touchEnd
+	      onTouchStart: this.eventStart,
+	      onTouchMove: this.eventMove,
+	      onTouchEnd: this.eventEnd,
+	      onMouseDown: this.props.trackMouse && this.eventStart,
+	      onMouseMove: this.props.trackMouse && this.eventMove,
+	      onMouseUp: this.props.trackMouse && this.eventEnd
 	    });
 
 	    delete newProps.onSwiped;
@@ -1285,6 +1301,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    delete newProps.stopPropagation;
 	    delete newProps.nodeName;
 	    delete newProps.children;
+	    delete newProps.trackMouse;
 
 	    return React.createElement(this.props.nodeName, newProps, this.props.children);
 	  }
