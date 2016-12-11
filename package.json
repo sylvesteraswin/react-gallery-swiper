@@ -13,7 +13,11 @@
     "livereload": true
   },
   "scripts": {
-    "start": "NODE_ENV=production gulp"
+    "start": "NODE_ENV=production gulp",
+    "build": "NODE_ENV=production gulp build",
+    "clean-gh": "git push origin --delete gh-pages",
+    "create-gh": "npm run clean-gh && git subtree push --prefix example origin gh-pages",
+    "postpublish": "git tag $npm_package_version && git push origin --tags"
   },
   "repository": {
     "type": "git",
