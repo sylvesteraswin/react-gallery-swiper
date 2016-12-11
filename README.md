@@ -7,6 +7,8 @@ Features
 * Navigation with thumbnails
 * Custom render your slides
 
+[![React Gallery Swiper](https://img.youtube.com/vi/KTQ1Y8zFwt4/0.jpg)](https://www.youtube.com/watch?v=KTQ1Y8zFwt4)
+
 ## Getting started
 
 ```
