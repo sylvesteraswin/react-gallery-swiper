@@ -125,6 +125,7 @@ class GallerySwiper extends Component {
 
         this.setState({
             currentIndex: (startIndex > images.length) ? 0 : startIndex,
+            id: Math.floor(Math.random() * 1000),
         });
 
         this._slideLeft = debounce(this._slideLeft, DEBOUNCE_INTERVAL, true);
@@ -940,7 +941,7 @@ class GallerySwiper extends Component {
         if (!disableArrowKeys) {
             events = (
                 <AttachHandler
-                    target={BASE_CLASS}
+                    target={BASE_CLASS + this.state.id}
                     events={{
                         keydown: this._handleKeyDown,
                         resize: this._handleResize,
@@ -951,7 +952,7 @@ class GallerySwiper extends Component {
 
         return (
             <div
-                id={BASE_CLASS}
+                id={BASE_CLASS + this.state.id}
                 className={classnames(BASE_CLASS, `align${thumbnailPosition}`)}>
                 {events}
                 <div

@@ -228,7 +228,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                images = _this$props3.images;
 
 	            _this.setState({
-	                currentIndex: startIndex > images.length ? 0 : startIndex
+	                currentIndex: startIndex > images.length ? 0 : startIndex,
+	                id: Math.floor(Math.random() * 1000)
 	            });
 
 	            _this._slideLeft = (0, _debounceEventHandler2.default)(_this._slideLeft, DEBOUNCE_INTERVAL, true);
@@ -915,7 +916,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var events = void 0;
 	            if (!disableArrowKeys) {
 	                events = _react2.default.createElement(_reactAttachHandler2.default, {
-	                    target: BASE_CLASS,
+	                    target: BASE_CLASS + _this.state.id,
 	                    events: {
 	                        keydown: _this._handleKeyDown,
 	                        resize: _this._handleResize
@@ -924,7 +925,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            return _react2.default.createElement('div', {
-	                id: BASE_CLASS,
+	                id: BASE_CLASS + _this.state.id,
 	                className: (0, _classnames4.default)(BASE_CLASS, 'align' + thumbnailPosition) }, events, _react2.default.createElement('div', {
 	                className: (0, _classnames4.default)(BASE_CLASS + '-content') }, _react2.default.createElement('div', {
 	                className: (0, _classnames4.default)(BASE_CLASS + '-slides-wrapper') }, _this._canNavigate() ? [showNav && _react2.default.createElement('div', {
