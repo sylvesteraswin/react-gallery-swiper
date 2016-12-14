@@ -112,6 +112,7 @@
   "precommit": [],
   "dependencies": {
     "classnames": "^2.2.5",
+    "react-attach-handler": "^0.1.1",
     "react-swipeable": "^3.5.1",
     "react-video-js": "^0.1.1"
   }

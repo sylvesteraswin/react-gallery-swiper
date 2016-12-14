@@ -4,9 +4,8 @@ import Swipeable from 'react-swipeable';
 /*eslint-enable no-unused-vars*/
 import classnames from 'classnames';
 
-import addEvent from './utils/add-event-listener';
-import removeEvent from './utils/remove-event-listener';
 import debounce from './utils/debounce-event-handler';
+import AttachHandler from 'react-attach-handler';
 
 import {
     getClassAsArray,
@@ -37,7 +36,6 @@ class GallerySwiper extends Component {
         galleryHeight: 0,
         thumbnailWidth: 0,
         thumbnailHeight: 0,
-        events: {},
         lazyLoad: {
             thumbnails: false,
         },
@@ -45,41 +43,14 @@ class GallerySwiper extends Component {
 
     componentWillReceiveProps = (nextProps) => {
         const {
-            disableArrowKeys,
             images,
             lazyLoad,
         } = this.props;
 
         const {
-            disableArrowKeys: newDisableArrowKeys,
             images: newImages,
             lazyLoad: newLazyload,
         } = nextProps;
-
-        if (disableArrowKeys !== newDisableArrowKeys) {
-            if (newDisableArrowKeys) {
-                const {
-                    handleKeyDown,
-                } = this.state.events;
-
-                if (handleKeyDown) {
-                    removeEvent(handleKeyDown);
-                    // Remove state from events
-                    this.setState({
-                        events: Object.assign({}, this.state.events, {
-                            handleKeyDown: null,
-                        }),
-                    });
-                }
-            } else if (!handleKeyDown) {
-                // Add state from events
-                this.setState({
-                    events: Object.assign({}, this.state.events, {
-                        handleKeyDown: addEvent(window, 'keydown', this._handleKeyDown, this),
-                    }),
-                });
-            }
-        }
 
         if (images.length !== newImages.length) {
             if (lazyLoad || newLazyload) {
@@ -165,51 +136,6 @@ class GallerySwiper extends Component {
     componentDidMount = () => {
         // delay the event handler to make sure we get the correct image offset width and height
         this._handleResize();
-
-        const {
-            disableArrowKeys,
-        } = this.props;
-
-        if (!disableArrowKeys) {
-            this.setState({
-                events: Object.assign({}, this.state.events, {
-                    handleKeyDown: addEvent(window, 'keydown', this._handleKeyDown, this),
-                }),
-            }, () => {
-                this.setState({
-                    events: Object.assign({}, this.state.events, {
-                        handleResize: addEvent(window, 'resize', this._handleResize, this),
-                    }),
-                });
-            });
-        }
-
-
-    };
-
-    componentWillUnMount = () => {
-        const {
-            disableArrowKeys,
-        } = this.props;
-
-        const {
-            handleKeyDown,
-            handleResize,
-        } = this.state.events;
-
-        if (!disableArrowKeys) {
-            removeEvent(handleKeyDown);
-        }
-
-        removeEvent(handleResize);
-
-        // Remove state from events
-        this.setState({
-            events: Object.assign({}, this.state.events, {
-                handleKeyDown: null,
-                handleResize: null,
-            }),
-        });
     };
 
     goTo = (index, event) => {
@@ -932,6 +858,7 @@ class GallerySwiper extends Component {
             infinite,
             onClick,
             thumbnailPosition,
+            disableArrowKeys,
             aspectRatio,
             renderItem: customRenderItem,
             renderThumb: customRenderThumb,
@@ -1009,9 +936,24 @@ class GallerySwiper extends Component {
             }
         });
 
+        let events;
+        if (!disableArrowKeys) {
+            events = (
+                <AttachHandler
+                    target={BASE_CLASS}
+                    events={{
+                        keydown: this._handleKeyDown,
+                        resize: this._handleResize,
+                    }}
+                />
+            );
+        }
+
         return (
             <div
+                id={BASE_CLASS}
                 className={classnames(BASE_CLASS, `align${thumbnailPosition}`)}>
+                {events}
                 <div
                     className={classnames(`${BASE_CLASS}-content`)}>
                     <div
