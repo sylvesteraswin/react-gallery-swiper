@@ -941,7 +941,7 @@ class GallerySwiper extends Component {
         if (!disableArrowKeys) {
             events = (
                 <AttachHandler
-                    target={BASE_CLASS + this.state.id}
+                    target={`${BASE_CLASS}_${this.state.id}`}
                     events={{
                         keydown: this._handleKeyDown,
                         resize: this._handleResize,
@@ -952,7 +952,7 @@ class GallerySwiper extends Component {
 
         return (
             <div
-                id={BASE_CLASS + this.state.id}
+                id={`${BASE_CLASS}_${this.state.id}`}
                 className={classnames(BASE_CLASS, `align${thumbnailPosition}`)}>
                 {events}
                 <div

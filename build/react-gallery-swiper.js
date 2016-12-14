@@ -916,7 +916,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var events = void 0;
 	            if (!disableArrowKeys) {
 	                events = _react2.default.createElement(_reactAttachHandler2.default, {
-	                    target: BASE_CLASS + _this.state.id,
+	                    target: BASE_CLASS + '_' + _this.state.id,
 	                    events: {
 	                        keydown: _this._handleKeyDown,
 	                        resize: _this._handleResize
@@ -925,7 +925,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            }
 
 	            return _react2.default.createElement('div', {
-	                id: BASE_CLASS + _this.state.id,
+	                id: BASE_CLASS + '_' + _this.state.id,
 	                className: (0, _classnames4.default)(BASE_CLASS, 'align' + thumbnailPosition) }, events, _react2.default.createElement('div', {
 	                className: (0, _classnames4.default)(BASE_CLASS + '-content') }, _react2.default.createElement('div', {
 	                className: (0, _classnames4.default)(BASE_CLASS + '-slides-wrapper') }, _this._canNavigate() ? [showNav && _react2.default.createElement('div', {
