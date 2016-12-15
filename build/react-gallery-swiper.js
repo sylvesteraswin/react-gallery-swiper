@@ -1582,7 +1582,7 @@ return /******/ (function(modules) { // webpackBootstrap
 		            _this.addEventListener();
 		        }, _this.componentDidUpdate = function () {
 		            _this.addEventListener();
-		        }, _this.componentWillUnMount = function () {
+		        }, _this.componentWillUnmount = function () {
 		            _this.removeEventListener();
 		        }, _this.addEventListener = function () {
 		            _this.setListeners(switchOn);
