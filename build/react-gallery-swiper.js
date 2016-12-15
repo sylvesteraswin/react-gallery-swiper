@@ -78,19 +78,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _classnames4 = _interopRequireDefault(_classnames3);
 
-	var _addEventListener = __webpack_require__(5);
-
-	var _addEventListener2 = _interopRequireDefault(_addEventListener);
-
-	var _removeEventListener = __webpack_require__(6);
-
-	var _removeEventListener2 = _interopRequireDefault(_removeEventListener);
-
-	var _debounceEventHandler = __webpack_require__(7);
+	var _debounceEventHandler = __webpack_require__(5);
 
 	var _debounceEventHandler2 = _interopRequireDefault(_debounceEventHandler);
 
-	var _attrHelpers = __webpack_require__(8);
+	var _reactAttachHandler = __webpack_require__(6);
+
+	var _reactAttachHandler2 = _interopRequireDefault(_reactAttachHandler);
+
+	var _attrHelpers = __webpack_require__(7);
 
 	function _interopRequireDefault(obj) {
 	    return obj && obj.__esModule ? obj : { default: obj };
@@ -169,41 +165,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	            galleryHeight: 0,
 	            thumbnailWidth: 0,
 	            thumbnailHeight: 0,
-	            events: {},
 	            lazyLoad: {
 	                thumbnails: false
 	            }
 	        }, _this.componentWillReceiveProps = function (nextProps) {
 	            var _this$props = _this.props,
-	                disableArrowKeys = _this$props.disableArrowKeys,
 	                images = _this$props.images,
 	                lazyLoad = _this$props.lazyLoad;
-	            var newDisableArrowKeys = nextProps.disableArrowKeys,
-	                newImages = nextProps.images,
+	            var newImages = nextProps.images,
 	                newLazyload = nextProps.lazyLoad;
-
-	            if (disableArrowKeys !== newDisableArrowKeys) {
-	                if (newDisableArrowKeys) {
-	                    var _handleKeyDown = _this.state.events.handleKeyDown;
-
-	                    if (_handleKeyDown) {
-	                        (0, _removeEventListener2.default)(_handleKeyDown);
-	                        // Remove state from events
-	                        _this.setState({
-	                            events: Object.assign({}, _this.state.events, {
-	                                handleKeyDown: null
-	                            })
-	                        });
-	                    }
-	                } else if (!handleKeyDown) {
-	                    // Add state from events
-	                    _this.setState({
-	                        events: Object.assign({}, _this.state.events, {
-	                            handleKeyDown: (0, _addEventListener2.default)(window, 'keydown', _this._handleKeyDown, _this)
-	                        })
-	                    });
-	                }
-	            }
 
 	            if (images.length !== newImages.length) {
 	                if (lazyLoad || newLazyload) {
@@ -258,7 +228,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                images = _this$props3.images;
 
 	            _this.setState({
-	                currentIndex: startIndex > images.length ? 0 : startIndex
+	                currentIndex: startIndex > images.length ? 0 : startIndex,
+	                id: Math.floor(Math.random() * 1000)
 	            });
 
 	            _this._slideLeft = (0, _debounceEventHandler2.default)(_this._slideLeft, DEBOUNCE_INTERVAL, true);
@@ -268,41 +239,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this.componentDidMount = function () {
 	            // delay the event handler to make sure we get the correct image offset width and height
 	            _this._handleResize();
-
-	            var disableArrowKeys = _this.props.disableArrowKeys;
-
-	            if (!disableArrowKeys) {
-	                _this.setState({
-	                    events: Object.assign({}, _this.state.events, {
-	                        handleKeyDown: (0, _addEventListener2.default)(window, 'keydown', _this._handleKeyDown, _this)
-	                    })
-	                }, function () {
-	                    _this.setState({
-	                        events: Object.assign({}, _this.state.events, {
-	                            handleResize: (0, _addEventListener2.default)(window, 'resize', _this._handleResize, _this)
-	                        })
-	                    });
-	                });
-	            }
-	        }, _this.componentWillUnMount = function () {
-	            var disableArrowKeys = _this.props.disableArrowKeys;
-	            var _this$state$events = _this.state.events,
-	                handleKeyDown = _this$state$events.handleKeyDown,
-	                handleResize = _this$state$events.handleResize;
-
-	            if (!disableArrowKeys) {
-	                (0, _removeEventListener2.default)(handleKeyDown);
-	            }
-
-	            (0, _removeEventListener2.default)(handleResize);
-
-	            // Remove state from events
-	            _this.setState({
-	                events: Object.assign({}, _this.state.events, {
-	                    handleKeyDown: null,
-	                    handleResize: null
-	                })
-	            });
 	        }, _this.goTo = function (index, event) {
 	            if (event) {
 	                event.preventDefault();
@@ -899,6 +835,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                infinite = _this$props9.infinite,
 	                _onClick = _this$props9.onClick,
 	                thumbnailPosition = _this$props9.thumbnailPosition,
+	                disableArrowKeys = _this$props9.disableArrowKeys,
 	                aspectRatio = _this$props9.aspectRatio,
 	                customRenderItem = _this$props9.renderItem,
 	                customRenderThumb = _this$props9.renderThumb;
@@ -976,8 +913,20 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 	            });
 
+	            var events = void 0;
+	            if (!disableArrowKeys) {
+	                events = _react2.default.createElement(_reactAttachHandler2.default, {
+	                    target: BASE_CLASS + '_' + _this.state.id,
+	                    events: {
+	                        keydown: _this._handleKeyDown,
+	                        resize: _this._handleResize
+	                    }
+	                });
+	            }
+
 	            return _react2.default.createElement('div', {
-	                className: (0, _classnames4.default)(BASE_CLASS, 'align' + thumbnailPosition) }, _react2.default.createElement('div', {
+	                id: BASE_CLASS + '_' + _this.state.id,
+	                className: (0, _classnames4.default)(BASE_CLASS, 'align' + thumbnailPosition) }, events, _react2.default.createElement('div', {
 	                className: (0, _classnames4.default)(BASE_CLASS + '-content') }, _react2.default.createElement('div', {
 	                className: (0, _classnames4.default)(BASE_CLASS + '-slides-wrapper') }, _this._canNavigate() ? [showNav && _react2.default.createElement('div', {
 	                className: BASE_CLASS + '-navigation-wrapper',
@@ -1370,72 +1319,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
 	});
-	var addEvent = function addEvent(elem, event, fn, binder) {
-	    // avoid memory overhead of new anonymous functions for every event handler that's installed
-	    // by using local functions
-	    function listenHandler(e) {
-	        var ret = fn.apply(binder || this, arguments);
-	        if (ret === false) {
-	            e.stopPropagation();
-	            e.preventDefault();
-	        }
-	        return ret;
-	    }
-
-	    function attachHandler() {
-	        // set the this pointer same as addEventListener when fn is called
-	        // and make sure the event is passed to the fn also so that works the same too
-	        var ret = fn.call(elem, window.event);
-	        if (ret === false) {
-	            window.event.returnValue = false;
-	            window.event.cancelBubble = true;
-	        }
-	        return ret;
-	    }
-
-	    if (elem.addEventListener) {
-	        elem.addEventListener(event, listenHandler, false);
-	        return {
-	            elem: elem,
-	            handler: listenHandler,
-	            event: event
-	        };
-	    } else {
-	        elem.attachEvent('on' + event, attachHandler);
-	        return {
-	            elem: elem,
-	            handler: attachHander,
-	            event: event
-	        };
-	    }
-	};
-
-	exports.default = addEvent;
-
-/***/ },
-/* 6 */
-/***/ function(module, exports) {
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	var removeEvent = function removeEvent(token) {
-	    if (token.elem.removeEventListener) {
-	        token.elem.removeEventListener(token.event, token.handler);
-	    } else {
-	        token.elem.detachEvent('on' + token.event, token.handler);
-	    }
-	};
-
-	exports.default = removeEvent;
-
-/***/ },
-/* 7 */
-/***/ function(module, exports) {
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
 	// This is to handle accessing event properties in an asynchronous way
 	// https://facebook.github.io/react/docs/events.html#syntheticevent
 	function throttle(func, wait) {
@@ -1490,7 +1373,445 @@ return /******/ (function(modules) { // webpackBootstrap
 	exports.default = debounceEventHandler;
 
 /***/ },
-/* 8 */
+/* 6 */
+/***/ function(module, exports, __webpack_require__) {
+
+	(function webpackUniversalModuleDefinition(root, factory) {
+		if(true)
+			module.exports = factory(__webpack_require__(2));
+		else if(typeof define === 'function' && define.amd)
+			define(["react"], factory);
+		else if(typeof exports === 'object')
+			exports["AttachHandler"] = factory(require("react"));
+		else
+			root["AttachHandler"] = factory(root["React"]);
+	})(this, function(__WEBPACK_EXTERNAL_MODULE_2__) {
+	return /******/ (function(modules) { // webpackBootstrap
+	/******/ 	// The module cache
+	/******/ 	var installedModules = {};
+
+	/******/ 	// The require function
+	/******/ 	function __webpack_require__(moduleId) {
+
+	/******/ 		// Check if module is in cache
+	/******/ 		if(installedModules[moduleId])
+	/******/ 			return installedModules[moduleId].exports;
+
+	/******/ 		// Create a new module (and put it into the cache)
+	/******/ 		var module = installedModules[moduleId] = {
+	/******/ 			exports: {},
+	/******/ 			id: moduleId,
+	/******/ 			loaded: false
+	/******/ 		};
+
+	/******/ 		// Execute the module function
+	/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+
+	/******/ 		// Flag the module as loaded
+	/******/ 		module.loaded = true;
+
+	/******/ 		// Return the exports of the module
+	/******/ 		return module.exports;
+	/******/ 	}
+
+
+	/******/ 	// expose the modules object (__webpack_modules__)
+	/******/ 	__webpack_require__.m = modules;
+
+	/******/ 	// expose the module cache
+	/******/ 	__webpack_require__.c = installedModules;
+
+	/******/ 	// __webpack_public_path__
+	/******/ 	__webpack_require__.p = "";
+
+	/******/ 	// Load entry module and return exports
+	/******/ 	return __webpack_require__(0);
+	/******/ })
+	/************************************************************************/
+	/******/ ([
+	/* 0 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		module.exports = __webpack_require__(1).default;
+
+	/***/ },
+	/* 1 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		var _typeof2 = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+		Object.defineProperty(exports, "__esModule", {
+		    value: true
+		});
+
+		var _typeof = typeof Symbol === "function" && _typeof2(Symbol.iterator) === "symbol" ? function (obj) {
+		    return typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+		} : function (obj) {
+		    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj === "undefined" ? "undefined" : _typeof2(obj);
+		};
+
+		var _react = __webpack_require__(2);
+
+		var _react2 = _interopRequireDefault(_react);
+
+		var _reactAddonsShallowCompare = __webpack_require__(3);
+
+		var _reactAddonsShallowCompare2 = _interopRequireDefault(_reactAddonsShallowCompare);
+
+		var _helpers = __webpack_require__(6);
+
+		var helpers = _interopRequireWildcard(_helpers);
+
+		function _interopRequireWildcard(obj) {
+		    if (obj && obj.__esModule) {
+		        return obj;
+		    } else {
+		        var newObj = {};if (obj != null) {
+		            for (var key in obj) {
+		                if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
+		            }
+		        }newObj.default = obj;return newObj;
+		    }
+		}
+
+		function _interopRequireDefault(obj) {
+		    return obj && obj.__esModule ? obj : { default: obj };
+		}
+
+		function _classCallCheck(instance, Constructor) {
+		    if (!(instance instanceof Constructor)) {
+		        throw new TypeError("Cannot call a class as a function");
+		    }
+		}
+
+		function _possibleConstructorReturn(self, call) {
+		    if (!self) {
+		        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+		    }return call && ((typeof call === "undefined" ? "undefined" : _typeof2(call)) === "object" || typeof call === "function") ? call : self;
+		}
+
+		function _inherits(subClass, superClass) {
+		    if (typeof superClass !== "function" && superClass !== null) {
+		        throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof2(superClass)));
+		    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+		} //eslint-disable-line no-unused-vars
+
+
+		var defaultEventOptions = {
+		    capture: false,
+		    passive: false,
+		    debounce: false,
+		    debounceDelay: 250
+		};
+
+		var addEventListener = helpers.addEventListener,
+		    removeEventListener = helpers.removeEventListener,
+		    passiveOptions = helpers.passiveOptions;
+
+		var mergeOptionsWithDefault = function mergeOptionsWithDefault(obj) {
+		    return Object.assign({}, defaultEventOptions, obj);
+		};
+
+		var getEventsArgs = function getEventsArgs(eventName, cb, opts) {
+		    var args = [eventName, cb];
+		    args.push(passiveOptions ? opts : opts.capture);
+		    return args;
+		};
+
+		// Inspired from http://davidwalsh.name/javascript-debounce-function
+		var debounceFn = function debounceFn(cb, delay) {
+		    var timeout = void 0;
+
+		    return function () {
+		        var context = this;
+		        var args = arguments;
+
+		        clearTimeout(timeout);
+		        timeout = setTimeout(function () {
+		            cb.apply(context, args);
+		        }, delay);
+		    };
+		};
+
+		var switchOn = function switchOn(target, eventName, cb) {
+		    var opts = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+		    // Only supports modern browsers Sorry IE10- users
+		    if (addEventListener) {
+		        var _opts$debounce = opts.debounce,
+		            debounce = _opts$debounce === undefined ? false : _opts$debounce,
+		            debounceDelay = opts.debounceDelay;
+		        // http://stackoverflow.com/questions/2891096/addeventlistener-using-apply
+
+		        target.addEventListener.apply(target, getEventsArgs(eventName, debounce ? debounceFn(cb, debounceDelay) : cb, opts));
+		    }
+		};
+
+		var switchOff = function switchOff(target, eventName, cb) {
+		    var opts = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
+
+		    // Only supports modern browsers Sorry IE10- users
+		    if (removeEventListener) {
+		        // http://stackoverflow.com/questions/2891096/addeventlistener-using-apply
+		        target.removeEventListener.apply(target, getEventsArgs(eventName, cb, opts));
+		    }
+		};
+
+		var AttachHandler = function (_Component) {
+		    _inherits(AttachHandler, _Component);
+
+		    function AttachHandler() {
+		        var _ref;
+
+		        var _temp, _this, _ret;
+
+		        _classCallCheck(this, AttachHandler);
+
+		        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+		            args[_key] = arguments[_key];
+		        }
+
+		        return _ret = (_temp = (_this = _possibleConstructorReturn(this, (_ref = AttachHandler.__proto__ || Object.getPrototypeOf(AttachHandler)).call.apply(_ref, [this].concat(args))), _this), _this.state = {}, _this.componentDidMount = function () {
+		            _this.addEventListener();
+		        }, _this.shouldComponentUpdate = function (nextProps) {
+		            return (0, _reactAddonsShallowCompare2.default)({
+		                props: _this.props,
+		                state: _this.state
+		            }, nextProps, _this.state);
+		        }, _this.componentWillUpdate = function () {
+		            _this.addEventListener();
+		        }, _this.componentDidUpdate = function () {
+		            _this.addEventListener();
+		        }, _this.componentWillUnmount = function () {
+		            _this.removeEventListener();
+		        }, _this.addEventListener = function () {
+		            _this.setListeners(switchOn);
+		        }, _this.removeEventListener = function () {
+		            _this.setListeners(switchOff);
+		        }, _this.setListeners = function (switchOnOff) {
+		            var _this$props = _this.props,
+		                target = _this$props.target,
+		                events = _this$props.events;
+
+		            if (target) {
+		                (function () {
+		                    var element = void 0;
+
+		                    if (typeof target === 'string') {
+		                        element = window[target];
+		                    }
+
+		                    Object.keys(events).forEach(function (event) {
+		                        var value = events[event];
+		                        var valueType = typeof value === 'undefined' ? 'undefined' : _typeof(value);
+		                        var isObject = valueType === 'object';
+		                        var isFunction = valueType === 'function';
+
+		                        // This check is to make sure we have the right typeof value
+		                        if (!isObject && !isFunction) {
+		                            return;
+		                        }
+		                        var eventHandler = void 0,
+		                            options = void 0;
+
+		                        if (isObject) {
+		                            var _value$handler = value.handler,
+		                                handler = _value$handler === undefined ? null : _value$handler,
+		                                _value$opts = value.opts,
+		                                opts = _value$opts === undefined ? {} : _value$opts;
+
+		                            if (handler) {
+		                                eventHandler = handler;
+		                            }
+		                            if (opts) {
+		                                options = mergeOptionsWithDefault(opts);
+		                            }
+		                        } else {
+		                            eventHandler = value;
+		                        }
+
+		                        if (eventHandler) {
+		                            switchOnOff(element, event, eventHandler, options);
+		                        }
+		                    });
+		                })();
+		            }
+		        }, _this.render = function () {
+		            return _this.props.children || null;
+		        }, _temp), _possibleConstructorReturn(_this, _ret);
+		    }
+
+		    return AttachHandler;
+		}(_react.Component);
+
+		AttachHandler.propTypes = {
+		    // The Component will take one child
+		    children: _react.PropTypes.element,
+		    // DOM target to listen to
+		    target: _react.PropTypes.oneOfType([_react.PropTypes.object, _react.PropTypes.string]).isRequired,
+		    events: _react.PropTypes.oneOfType([_react.PropTypes.object, _react.PropTypes.func]).isRequired
+		};
+		exports.default = AttachHandler;
+
+	/***/ },
+	/* 2 */
+	/***/ function(module, exports) {
+
+		module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
+
+	/***/ },
+	/* 3 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		module.exports = __webpack_require__(4);
+
+	/***/ },
+	/* 4 */
+	/***/ function(module, exports, __webpack_require__) {
+
+		/**
+		 * Copyright 2013-present, Facebook, Inc.
+		 * All rights reserved.
+		 *
+		 * This source code is licensed under the BSD-style license found in the
+		 * LICENSE file in the root directory of this source tree. An additional grant
+		 * of patent rights can be found in the PATENTS file in the same directory.
+		 *
+		 */
+
+		'use strict';
+
+		var shallowEqual = __webpack_require__(5);
+
+		/**
+		 * Does a shallow comparison for props and state.
+		 * See ReactComponentWithPureRenderMixin
+		 * See also https://facebook.github.io/react/docs/shallow-compare.html
+		 */
+		function shallowCompare(instance, nextProps, nextState) {
+		  return !shallowEqual(instance.props, nextProps) || !shallowEqual(instance.state, nextState);
+		}
+
+		module.exports = shallowCompare;
+
+	/***/ },
+	/* 5 */
+	/***/ function(module, exports) {
+
+		/**
+		 * Copyright (c) 2013-present, Facebook, Inc.
+		 * All rights reserved.
+		 *
+		 * This source code is licensed under the BSD-style license found in the
+		 * LICENSE file in the root directory of this source tree. An additional grant
+		 * of patent rights can be found in the PATENTS file in the same directory.
+		 *
+		 * @typechecks
+		 * 
+		 */
+
+		/*eslint-disable no-self-compare */
+
+		'use strict';
+
+		var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+		/**
+		 * inlined Object.is polyfill to avoid requiring consumers ship their own
+		 * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+		 */
+		function is(x, y) {
+		  // SameValue algorithm
+		  if (x === y) {
+		    // Steps 1-5, 7-10
+		    // Steps 6.b-6.e: +0 != -0
+		    // Added the nonzero y check to make Flow happy, but it is redundant
+		    return x !== 0 || y !== 0 || 1 / x === 1 / y;
+		  } else {
+		    // Step 6.a: NaN == NaN
+		    return x !== x && y !== y;
+		  }
+		}
+
+		/**
+		 * Performs equality by iterating through keys on an object and returning false
+		 * when any key has values which are not strictly equal between the arguments.
+		 * Returns true when the values of all keys are strictly equal.
+		 */
+		function shallowEqual(objA, objB) {
+		  if (is(objA, objB)) {
+		    return true;
+		  }
+
+		  if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
+		    return false;
+		  }
+
+		  var keysA = Object.keys(objA);
+		  var keysB = Object.keys(objB);
+
+		  if (keysA.length !== keysB.length) {
+		    return false;
+		  }
+
+		  // Test for A's keys different from B.
+		  for (var i = 0; i < keysA.length; i++) {
+		    if (!hasOwnProperty.call(objB, keysA[i]) || !is(objA[keysA[i]], objB[keysA[i]])) {
+		      return false;
+		    }
+		  }
+
+		  return true;
+		}
+
+		module.exports = shallowEqual;
+
+	/***/ },
+	/* 6 */
+	/***/ function(module, exports) {
+
+		Object.defineProperty(exports, "__esModule", {
+		    value: true
+		});
+		// Inspired by https://github.com/facebook/fbjs/blob/master/packages/fbjs/src/core/ExecutionEnvironment.js
+		var canUseDom = exports.canUseDom = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
+
+		var addEventListener = exports.addEventListener = canUseDom && 'addEventListener' in window;
+		var removeEventListener = exports.removeEventListener = canUseDom && 'removeEventListener' in window;
+
+		var defineProperty = function defineProperty(o, p, attr) {
+		    return Object.defineProperty(o, p, attr);
+		};
+
+		// Passive events
+		// https://github.com/Modernizr/Modernizr/blob/master/feature-detects/dom/passiveeventlisteners.js
+		var passiveOptions = exports.passiveOptions = function () {
+		    var cache = null;
+		    return function () {
+		        if (cache !== null) {
+		            return cache;
+		        }
+		        var passiveOptionsSupport = false;
+		        try {
+		            window.addEventListener('test', null, defineProperty({}, 'passive', {
+		                get: function get() {
+		                    passiveOptionsSupport = true;
+		                }
+		            }));
+		        } catch (e) {} //eslint-disable-line no-empty
+
+		        cache = passiveOptionsSupport;
+		        return passiveOptionsSupport;
+		    }();
+		}();
+
+	/***/ }
+	/******/ ])
+	});
+	;
+
+/***/ },
+/* 7 */
 /***/ function(module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
