@@ -35,7 +35,7 @@ function throttle(func, wait) {
         }
         return result;
     };
-};
+}
 
 function debounceEventHandler(...args) {
     const throttled = throttle(...args);
@@ -47,6 +47,6 @@ function debounceEventHandler(...args) {
 
         return throttled();
     };
-};
+}
 
 export { debounceEventHandler as default };

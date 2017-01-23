@@ -66,6 +66,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	    value: true
 	});
 
+	var _createClass = function () {
+	    function defineProperties(target, props) {
+	        for (var i = 0; i < props.length; i++) {
+	            var descriptor = props[i];descriptor.enumerable = descriptor.enumerable || false;descriptor.configurable = true;if ("value" in descriptor) descriptor.writable = true;Object.defineProperty(target, descriptor.key, descriptor);
+	        }
+	    }return function (Constructor, protoProps, staticProps) {
+	        if (protoProps) defineProperties(Constructor.prototype, protoProps);if (staticProps) defineProperties(Constructor, staticProps);return Constructor;
+	    };
+	}();
+
 	var _react = __webpack_require__(2);
 
 	var _react2 = _interopRequireDefault(_react);
@@ -82,11 +92,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _debounceEventHandler2 = _interopRequireDefault(_debounceEventHandler);
 
-	var _reactAttachHandler = __webpack_require__(6);
+	var _imageUtils = __webpack_require__(6);
+
+	var _promisifyTransitionEvent = __webpack_require__(7);
+
+	var _reactAttachHandler = __webpack_require__(8);
 
 	var _reactAttachHandler2 = _interopRequireDefault(_reactAttachHandler);
 
-	var _attrHelpers = __webpack_require__(7);
+	var _attrHelpers = __webpack_require__(9);
 
 	function _interopRequireDefault(obj) {
 	    return obj && obj.__esModule ? obj : { default: obj };
@@ -119,12 +133,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	function _possibleConstructorReturn(self, call) {
 	    if (!self) {
 	        throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-	    }return call && ((typeof call === 'undefined' ? 'undefined' : _typeof(call)) === "object" || typeof call === "function") ? call : self;
+	    }return call && ((typeof call === "undefined" ? "undefined" : _typeof(call)) === "object" || typeof call === "function") ? call : self;
 	}
 
 	function _inherits(subClass, superClass) {
 	    if (typeof superClass !== "function" && superClass !== null) {
-	        throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === 'undefined' ? 'undefined' : _typeof(superClass)));
+	        throw new TypeError("Super expression must either be null or a function, not " + (typeof superClass === "undefined" ? "undefined" : _typeof(superClass)));
 	    }subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } });if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
 	} /*eslint-disable no-unused-vars*/
 
@@ -133,7 +147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var BASE_CLASS = 'zvui-gallery-swiper';
 	var LEFT_ARROW = 37;
 	var RIGHT_ARROW = 39;
-	var DEBOUNCE_INTERVAL = 500;
+	var DEBOUNCE_INTERVAL = 200;
 
 	var NAN_IMG = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 	var LOADED_CLS = 'loaded';
@@ -182,7 +196,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                            thumbnails: false
 	                        }
 	                    }, function () {
-	                        _this._resetImages();
+	                        _this._resetSwiper();
 	                    });
 	                }
 	            }
@@ -288,25 +302,23 @@ return /******/ (function(modules) { // webpackBootstrap
 	                return [].concat(_toConsumableArray(images));
 	            }
 	            return [];
-	        }, _this._resetImages = function () {
-	            var images = _this.props.images;
+	        }, _this._resetThumbImages = function () {
 	            // Reset all thumbnails to its original state so we can load new images
-
 	            var thumbnails = _this._getAllThumbsInArray();
 	            if (thumbnails.length) {
 	                thumbnails.forEach(function (img) {
-	                    var cls = (0, _attrHelpers.getClassAsArray)(img);
 	                    img.src = NAN_IMG;
-	                    (0, _attrHelpers.removeStringFromArray)(cls, LOADED_CLS);
-	                    (0, _attrHelpers.pushUniqueStringToArray)(cls, NOT_LOADED_CLS);
-	                    (0, _attrHelpers.addClassFromArray)(img, cls);
+	                    img.classList.add(NOT_LOADED_CLS);
+	                    img.classList.remove(LOADED_CLS);
 	                });
 
 	                // Once its reset, fire the loading function to lazy load all thumbnails
 	                _this._updateIfLazyLoad();
 	            }
-
+	        }, _this._resetMainImages = function () {
+	            var images = _this.props.images;
 	            // This is the hack to remove the loading main images from DOM so the new images can be loaded
+
 	            var imageWraps = images.reduce(function (result, value, index) {
 	                result.push(_this['_gallerySlide-' + index]);
 	                return result;
@@ -321,19 +333,34 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    }
 	                });
 	            }
+	        }, _this._resetSwiper = function () {
+	            _this._resetThumbImages();
+	            _this._resetMainImages();
+	            // Once its reset, fire the loading function to lazy load all thumbnails
+	            _this._updateIfLazyLoad();
 	        }, _this._loadThumbnail = function (img, index, images) {
-	            var image = new Image();
 	            var src = img.getAttribute('data-src');
 
-	            image.onload = function () {
-	                img.src = src;
-	                var cls = (0, _attrHelpers.getClassAsArray)(img);
+	            (0, _imageUtils.createNewImage)(src).then(function (image) {
+	                if (img) {
+	                    img.src = src;
+	                    img.classList.remove(NOT_LOADED_CLS);
+	                    img.classList.add(LOADED_CLS);
+	                }
 
-	                (0, _attrHelpers.removeStringFromArray)(cls, NOT_LOADED_CLS);
-	                (0, _attrHelpers.pushUniqueStringToArray)(cls, LOADED_CLS);
-	                (0, _attrHelpers.addClassFromArray)(img, cls);
-	            };
-	            image.src = src;
+	                // Cleanup
+	                if (image) {
+	                    image = null;
+	                }
+	            }).catch(function (_ref2) {
+	                var error = _ref2.error,
+	                    image = _ref2.image;
+
+	                /*eslint-disable no-console*/
+	                console.error(error);
+	                console.error('Image Object:', image);
+	                /*eslint-enable no-console*/
+	            });
 
 	            if (index === images.length - 1) {
 	                _this.setState({
@@ -448,9 +475,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this._slideLeft = function (event) {
 	            var onArrowClick = _this.props.onArrowClick;
 
+	            var currentIndex = _this.state.currentIndex;
+
 	            if (onArrowClick && typeof onArrowClick === 'function') {
 	                onArrowClick.call(_this, 'left', _this.state.currentIndex - 1, event);
 	            }
+
+	            var elWrap = _this['_gallerySlide-' + currentIndex];
+	            (0, _promisifyTransitionEvent.promisifyTransitionEvent)(elWrap.parentElement, 500).then(function (_ref3) {
+	                var el = _ref3.element;
+
+	                var img = el.querySelector('img.' + MAIN_IMAGE_IDENTIFIER);
+	                if (!img) {
+	                    return;
+	                }
+	                img.classList.remove(MAIN_IMAGE_IDENTIFIER);
+	            });
 
 	            _this.goTo(_this.state.currentIndex - 1, event);
 	        }, _this._canSlideRight = function () {
@@ -458,9 +498,22 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this._slideRight = function (event) {
 	            var onArrowClick = _this.props.onArrowClick;
 
+	            var currentIndex = _this.state.currentIndex;
+
 	            if (onArrowClick && typeof onArrowClick === 'function') {
 	                onArrowClick.call(_this, 'right', _this.state.currentIndex + 1, event);
 	            }
+
+	            var elWrap = _this['_gallerySlide-' + currentIndex];
+	            (0, _promisifyTransitionEvent.promisifyTransitionEvent)(elWrap.parentElement, 500).then(function (_ref4) {
+	                var el = _ref4.element;
+
+	                var img = el.querySelector('img.' + MAIN_IMAGE_IDENTIFIER);
+	                if (!img) {
+	                    return;
+	                }
+	                img.classList.remove(MAIN_IMAGE_IDENTIFIER);
+	            });
 
 	            _this.goTo(_this.state.currentIndex + 1, event);
 	        }, _this._handleResize = function () {
@@ -499,7 +552,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            if (fn && typeof fn === 'function') {
 	                fn();
-	            };
+	            }
 	        }, _this._handleImageError = function (event) {
 	            var defaultImage = _this.props.defaultImage;
 
@@ -598,7 +651,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _this.goTo(slideTo);
 	            }, 0);
 	        }, _this._loadMainImage = function () {
-	            var lazyLoad = _this.props.lazyLoad;
+	            var _this$props6 = _this.props,
+	                lazyLoad = _this$props6.lazyLoad,
+	                progressiveLazyLoad = _this$props6.progressiveLazyLoad;
 
 	            if (!lazyLoad) {
 	                return false;
@@ -606,42 +661,32 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	            var index = _this.whereAmI();
 
-	            var elImg = _this['_galleryImage-' + index];
-	            var elWrap = _this['_gallerySlide-' + index];
-
-	            if (elImg && elImg.nodeName.toLowerCase() === 'img') {
-	                var shouldLoad = elImg.className.indexOf(NOT_LOADED_CLS) >= 0;
-	                var src = elImg.getAttribute('data-src');
-	                if (shouldLoad && src) {
-	                    (function () {
-	                        var img = new Image();
-	                        img.src = src;
-	                        elWrap.appendChild(img);
-	                        img.onload = function () {
-	                            var cls = (0, _attrHelpers.getClassAsArray)(img);
-	                            // img.className = LOADED_CLS;
-	                            setTimeout(function () {
-	                                (0, _attrHelpers.pushUniqueStringToArray)(cls, LOADED_CLS);
-	                                (0, _attrHelpers.pushUniqueStringToArray)(cls, MAIN_IMAGE_IDENTIFIER);
-	                                (0, _attrHelpers.addClassFromArray)(img, cls);
-	                            }, 500);
-	                        };
-	                    })();
+	            _this._loadImage(index).then(function (img) {
+	                if (progressiveLazyLoad) {
+	                    _this._progressiveLazyLoad();
 	                }
-	            }
+
+	                if (!img) {
+	                    return null;
+	                }
+
+	                setTimeout(function () {
+	                    (0, _attrHelpers.addClassFromArray)(img, [LOADED_CLS, MAIN_IMAGE_IDENTIFIER]);
+	                }, 100);
+	            }).catch(_this._loadImageErrorHandler);
 	        }, _this._renderItem = function (img, index) {
 	            var _classnames;
 
-	            var _this$props6 = _this.props,
-	                _this$props6$onImageE = _this$props6.onImageError,
-	                onImageError = _this$props6$onImageE === undefined ? _this._handleImageError : _this$props6$onImageE,
-	                onImageLoad = _this$props6.onImageLoad,
-	                lazyLoad = _this$props6.lazyLoad,
-	                _this$props6$lazyLoad = _this$props6.lazyLoadAnimation,
-	                lazyLoadAnimation = _this$props6$lazyLoad === undefined ? false : _this$props6$lazyLoad,
-	                aspectRatio = _this$props6.aspectRatio,
-	                startIndex = _this$props6.startIndex,
-	                images = _this$props6.images;
+	            var _this$props7 = _this.props,
+	                _this$props7$onImageE = _this$props7.onImageError,
+	                onImageError = _this$props7$onImageE === undefined ? _this._handleImageError : _this$props7$onImageE,
+	                onImageLoad = _this$props7.onImageLoad,
+	                lazyLoad = _this$props7.lazyLoad,
+	                _this$props7$lazyLoad = _this$props7.lazyLoadAnimation,
+	                lazyLoadAnimation = _this$props7$lazyLoad === undefined ? false : _this$props7$lazyLoad,
+	                aspectRatio = _this$props7.aspectRatio,
+	                startIndex = _this$props7.startIndex,
+	                images = _this$props7.images;
 
 	            var saneStartIndex = startIndex > images.length - 1 ? 0 : startIndex;
 
@@ -686,11 +731,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	                thumbnailAlt = _img$thumbnailAlt === undefined ? '' : _img$thumbnailAlt,
 	                _img$onThumbnailError = img.onThumbnailError,
 	                onThumbnailError = _img$onThumbnailError === undefined ? _this._handleImageError : _img$onThumbnailError;
-	            var _this$props7 = _this.props,
-	                _this$props7$lazyLoad = _this$props7.lazyLoad,
-	                lazyLoad = _this$props7$lazyLoad === undefined ? false : _this$props7$lazyLoad,
-	                _this$props7$lazyLoad2 = _this$props7.lazyLoadAnimation,
-	                lazyLoadAnimation = _this$props7$lazyLoad2 === undefined ? false : _this$props7$lazyLoad2;
+	            var _this$props8 = _this.props,
+	                _this$props8$lazyLoad = _this$props8.lazyLoad,
+	                lazyLoad = _this$props8$lazyLoad === undefined ? false : _this$props8$lazyLoad,
+	                _this$props8$lazyLoad2 = _this$props8.lazyLoadAnimation,
+	                lazyLoadAnimation = _this$props8$lazyLoad2 === undefined ? false : _this$props8$lazyLoad2;
 
 	            var classes = (0, _classnames4.default)((_classnames2 = {}, _defineProperty(_classnames2, NOT_LOADED_CLS, lazyLoad), _defineProperty(_classnames2, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames2, LOADED_CLS, !lazyLoad), _classnames2));
 
@@ -729,9 +774,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	                currentIndex = _this$state6.currentIndex,
 	                offsetPercentage = _this$state6.offsetPercentage,
 	                previousIndex = _this$state6.previousIndex;
-	            var _this$props8 = _this.props,
-	                infinite = _this$props8.infinite,
-	                images = _this$props8.images;
+	            var _this$props9 = _this.props,
+	                infinite = _this$props9.infinite,
+	                images = _this$props9.images;
 
 	            var baseTraslate = -100 * currentIndex;
 
@@ -824,21 +869,21 @@ return /******/ (function(modules) { // webpackBootstrap
 	                galleryHeight = _this$state8.galleryHeight,
 	                _this$state8$style = _this$state8.style,
 	                slideTransformStyle = _this$state8$style === undefined ? {} : _this$state8$style;
-	            var _this$props9 = _this.props,
-	                images = _this$props9.images,
-	                showThumbnails = _this$props9.showThumbnails,
-	                showBullets = _this$props9.showBullets,
-	                showIndex = _this$props9.showIndex,
-	                indexSeparator = _this$props9.indexSeparator,
-	                showNav = _this$props9.showNav,
-	                disableSwipe = _this$props9.disableSwipe,
-	                infinite = _this$props9.infinite,
-	                _onClick = _this$props9.onClick,
-	                thumbnailPosition = _this$props9.thumbnailPosition,
-	                disableArrowKeys = _this$props9.disableArrowKeys,
-	                aspectRatio = _this$props9.aspectRatio,
-	                customRenderItem = _this$props9.renderItem,
-	                customRenderThumb = _this$props9.renderThumb;
+	            var _this$props10 = _this.props,
+	                images = _this$props10.images,
+	                showThumbnails = _this$props10.showThumbnails,
+	                showBullets = _this$props10.showBullets,
+	                showIndex = _this$props10.showIndex,
+	                indexSeparator = _this$props10.indexSeparator,
+	                showNav = _this$props10.showNav,
+	                disableSwipe = _this$props10.disableSwipe,
+	                infinite = _this$props10.infinite,
+	                _onClick = _this$props10.onClick,
+	                thumbnailPosition = _this$props10.thumbnailPosition,
+	                disableArrowKeys = _this$props10.disableArrowKeys,
+	                aspectRatio = _this$props10.aspectRatio,
+	                customRenderItem = _this$props10.renderItem,
+	                customRenderThumb = _this$props10.renderThumb;
 
 	            var slides = [];
 	            var thumbnails = [];
@@ -983,6 +1028,87 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _temp), _possibleConstructorReturn(_this, _ret);
 	    }
 
+	    _createClass(GallerySwiper, [{
+	        key: '_loadImage',
+	        value: function _loadImage(index) {
+	            var _this2 = this;
+
+	            return new Promise(function (resolve, reject) {
+	                var elImg = _this2['_galleryImage-' + index];
+	                var elWrap = _this2['_gallerySlide-' + index];
+
+	                if (!elImg || !(elImg.nodeName.toLowerCase() === 'img')) {
+	                    return resolve(null);
+	                }
+
+	                var shouldLoad = elImg.classList.contains(NOT_LOADED_CLS);
+	                if (!shouldLoad) {
+	                    return resolve(elImg);
+	                }
+
+	                var src = elImg.getAttribute('data-src');
+	                if (!src) {
+	                    return resolve(null);
+	                }
+	                var loadedImage = null;
+
+	                Array.from(elWrap.childNodes).some(function (node) {
+	                    if (node.src === src) {
+	                        loadedImage = node;
+	                    }
+	                    return !!loadedImage;
+	                });
+	                if (loadedImage) {
+	                    return resolve(loadedImage);
+	                }
+
+	                return (0, _imageUtils.createNewImage)(src).then(function (img) {
+	                    elWrap.appendChild(img);
+	                    // img.classList.add(LOADED_CLS);
+	                    resolve(img);
+	                }).catch(reject);
+	            });
+	        }
+	    }, {
+	        key: '_loadImageErrorHandler',
+	        value: function _loadImageErrorHandler(_ref5) {
+	            var error = _ref5.error,
+	                image = _ref5.image;
+
+	            /*eslint-disable no-console*/
+	            if (arguments[0] instanceof Error) {
+	                return console.error(arguments[0]);
+	            }
+
+	            console.error(error);
+	            console.error('Image Object:', image);
+	            /*eslint-enable no-console*/
+	        }
+	    }, {
+	        key: '_addLoadedClassToImage',
+	        value: function _addLoadedClassToImage(img) {
+	            if (img) {
+	                (0, _attrHelpers.addClassFromArray)(img, [LOADED_CLS]);
+	            }
+	        }
+	    }, {
+	        key: '_progressiveLazyLoad',
+	        value: function _progressiveLazyLoad() {
+	            var images = this.props.images;
+
+	            var index = this.whereAmI();
+
+	            var prevIndex = index - 1 < 0 ? images.length - 1 : index - 1;
+	            var nextIndex = index + 1 > images.length - 1 ? 0 : index + 1;
+	            if (prevIndex !== index) {
+	                this._loadImage(prevIndex).then(this._addLoadedClassToImage).catch(this._loadImageErrorHandler);
+	            }
+	            if (nextIndex !== index) {
+	                this._loadImage(nextIndex).then(this._addLoadedClassToImage).catch(this._loadImageErrorHandler);
+	            }
+	        }
+	    }]);
+
 	    return GallerySwiper;
 	}(_react.Component);
 
@@ -991,6 +1117,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    showNav: _react.PropTypes.bool,
 	    aspectRatio: _react.PropTypes.oneOf(['square', '3x4', '4x6', '5x7', '8x10', '4x3', '6x4', '7x5', '10x8']),
 	    lazyLoad: _react.PropTypes.bool,
+	    progressiveLazyLoad: _react.PropTypes.bool,
 	    lazyLoadAnimation: _react.PropTypes.bool,
 	    infinite: _react.PropTypes.bool,
 	    showIndex: _react.PropTypes.bool,
@@ -1020,6 +1147,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    showNav: true,
 	    aspectRatio: 'square',
 	    lazyLoad: false,
+	    progressiveLazyLoad: false,
 	    lazyLoadAnimation: false,
 	    infinite: true,
 	    showIndex: false,
@@ -1055,6 +1183,15 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var React = __webpack_require__(2);
 
+	function getInitialState() {
+	  return {
+	    x: null,
+	    y: null,
+	    swiping: false,
+	    start: 0
+	  };
+	}
+
 	var Swipeable = React.createClass({
 	  displayName: 'Swipeable',
 
@@ -1077,13 +1214,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	    trackMouse: React.PropTypes.bool
 	  },
 
-	  getInitialState: function getInitialState() {
-	    return {
-	      x: null,
-	      y: null,
-	      swiping: false,
-	      start: 0
-	    };
+	  componentWillMount: function componentWillMount() {
+	    this.swipeable = getInitialState();
 	  },
 
 	  getDefaultProps: function getDefaultProps() {
@@ -1108,13 +1240,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      y = e.clientY;
 	    }
 
-	    var xd = this.state.x - x;
-	    var yd = this.state.y - y;
+	    var xd = this.swipeable.x - x;
+	    var yd = this.swipeable.y - y;
 
 	    var axd = Math.abs(xd);
 	    var ayd = Math.abs(yd);
 
-	    var time = Date.now() - this.state.start;
+	    var time = Date.now() - this.swipeable.start;
 	    var velocity = Math.sqrt(axd * axd + ayd * ayd) / time;
 
 	    return {
@@ -1127,6 +1259,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  eventStart: function eventStart(e) {
+	    if (typeof this.props.onMouseDown === 'function') {
+	      this.props.onMouseDown(e);
+	    }
+
+	    if (e.type === 'mousedown' && !this.props.trackMouse) {
+	      return;
+	    }
+
 	    if (e.touches && e.touches.length > 1) {
 	      return;
 	    }
@@ -1137,16 +1277,24 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	    if (this.props.stopPropagation) e.stopPropagation();
 
-	    this.setState({
+	    this.swipeable = {
 	      start: Date.now(),
 	      x: touches[0].clientX,
 	      y: touches[0].clientY,
 	      swiping: false
-	    });
+	    };
 	  },
 
 	  eventMove: function eventMove(e) {
-	    if (!this.state.x || !this.state.y || e.touches && e.touches.length > 1) {
+	    if (typeof this.props.onMouseMove === 'function') {
+	      this.props.onMouseMove(e);
+	    }
+
+	    if (e.type === 'mousemove' && !this.props.trackMouse) {
+	      return;
+	    }
+
+	    if (!this.swipeable.x || !this.swipeable.y || e.touches && e.touches.length > 1) {
 	      return;
 	    }
 
@@ -1189,7 +1337,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 
-	    this.setState({ swiping: true });
+	    this.swipeable.swiping = true;
 
 	    if (cancelPageSwipe && this.props.preventDefaultTouchmoveEvent) {
 	      e.preventDefault();
@@ -1197,7 +1345,15 @@ return /******/ (function(modules) { // webpackBootstrap
 	  },
 
 	  eventEnd: function eventEnd(e) {
-	    if (this.state.swiping) {
+	    if (typeof this.props.onMouseUp === 'function') {
+	      this.props.onMouseUp(e);
+	    }
+
+	    if (e.type === 'mouseup' && !this.props.trackMouse) {
+	      return;
+	    }
+
+	    if (this.swipeable.swiping) {
 	      var pos = this.calculatePos(e);
 
 	      if (this.props.stopPropagation) e.stopPropagation();
@@ -1221,7 +1377,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 	    }
 
-	    this.setState(this.getInitialState());
+	    this.swipeable = getInitialState();
 	  },
 
 	  render: function render() {
@@ -1229,9 +1385,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	      onTouchStart: this.eventStart,
 	      onTouchMove: this.eventMove,
 	      onTouchEnd: this.eventEnd,
-	      onMouseDown: this.props.trackMouse && this.eventStart,
-	      onMouseMove: this.props.trackMouse && this.eventMove,
-	      onMouseUp: this.props.trackMouse && this.eventEnd
+	      onMouseDown: this.eventStart,
+	      onMouseMove: this.eventMove,
+	      onMouseUp: this.eventEnd
 	    });
 
 	    delete newProps.onSwiped;
@@ -1356,7 +1512,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return result;
 	    };
-	};
+	}
 
 	function debounceEventHandler() {
 	    var throttled = throttle.apply(undefined, arguments);
@@ -1368,12 +1524,200 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	        return throttled();
 	    };
-	};
+	}
 
 	exports.default = debounceEventHandler;
 
 /***/ },
 /* 6 */
+/***/ function(module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	/**
+	 *
+	 * Takes a source string and returns a promise which resolves on a loaded image.
+	 * @param {string} src
+	 * @returns {Promise<Image>}
+	 */
+	var createNewImage = function createNewImage(src) {
+	    return new Promise(function (resolve, reject) {
+	        var image = new Image();
+
+	        var _cleanup = void 0;
+
+	        var resolveHandler = function resolveHandler() {
+	            resolve(image);
+
+	            if (_cleanup) {
+	                _cleanup();
+	            }
+	        };
+
+	        var rejectHandler = function rejectHandler(error) {
+	            reject({
+	                error: error,
+	                image: image
+	            });
+	            if (_cleanup) {
+	                _cleanup();
+	            }
+	        };
+
+	        _cleanup = function cleanup() {
+	            image.removeEventListener('load', resolveHandler);
+	            image.removeEventListener('error', rejectHandler);
+	            image.removeEventListener('abort', rejectHandler);
+	            resolveHandler = null;
+	            rejectHandler = null;
+	            _cleanup = null;
+	            resolve = null;
+	            reject = null;
+	        };
+
+	        image.addEventListener('load', resolveHandler, { once: true });
+	        image.addEventListener('error', rejectHandler, { once: true });
+	        image.addEventListener('abort', rejectHandler, { once: true });
+
+	        image.src = src;
+	    });
+	};
+
+	exports.createNewImage = createNewImage;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	/**
+	 * This helper sets a transition event on an html element. It returns a promise that resolves when
+	 * the event is fired. This is useful for cases when you wish to do something after transition
+	 * has ended.
+	 */
+
+	var EVENT_NAMES = ['webkitTransitionEnd', 'transitionend', 'msTransitionEnd', 'oTransitionEnd'];
+
+	/**
+	 *
+	 * @param {HTMLElement} element
+	 * @param {string} eventName
+	 * @param {Function} cb
+	 * @private
+	 */
+	var _removeEventListener = function _removeEventListener(element, eventName, cb) {
+	    element.removeEventListener(eventName, cb);
+	};
+
+	/**
+	 * Adds an event listener and returns a (bound) function that removes the event listener
+	 * @param {HTMLElement} element
+	 * @param {string} eventName
+	 * @param {Function} cb
+	 * @returns {Function}
+	 * @private
+	 */
+	var _addEventListeners = function _addEventListeners(element, eventName, cb) {
+	    element.addEventListener(eventName, cb);
+	    return _removeEventListener.bind(undefined, element, eventName, cb);
+	};
+
+	/**
+	 * @param {Function} resolve
+	 * @param {HTMLElement} element
+	 * @param {Event} event
+	 * @private
+	 */
+	var _transitionHandler = function _transitionHandler(resolve, element, event) {
+	    resolve({
+	        element: element,
+	        event: event
+	    });
+	};
+
+	/**
+	 * Iterates the cleanup list and invokes all the cleanups to remove all listeners
+	 * @param {Array<Function>} cleanupFnsList
+	 * @private
+	 */
+	var _cleanup = function _cleanup(cleanupFnsList) {
+	    cleanupFnsList.forEach(function (cleanupFn) {
+	        return cleanupFn();
+	    });
+	};
+
+	/**
+	 * Takes an html element and return a promise that resolves when a transition event is fired. When
+	 * timeLimit is provided, the promise will resolve after timeLimit ms regardless of the event.
+	 * @param {HTMLElement} element
+	 * @param {number?} timeLimit
+	 * @returns {Promise<{element: HTMLElement, event?: TransitionEvent}>}
+	 */
+	var promisifyTransitionEvent = function promisifyTransitionEvent(element, timeLimit) {
+	    return new Promise(function (resolve, reject) {
+
+	        // Test HTMLElement has addEventListener
+	        if (!element.addEventListener) {
+	            reject(new TypeError('element argument has no "addEventListener" method.'));
+	        }
+
+	        var removeEvents = void 0;
+
+	        // Setup timeout to resolve the promise regardless of the event
+	        var timeout = void 0;
+	        if (timeLimit) {
+	            timeout = setTimeout(function () {
+	                resolve({
+	                    element: element
+	                });
+
+	                // Cleanup
+	                if (removeEvents) {
+	                    // Cleanup listeners
+	                    _cleanup(removeEvents);
+	                    // Cleanup list of remover functions.
+	                    removeEvents = null;
+	                }
+	                resolve = null;
+	                reject = null;
+	            }, timeLimit);
+	        }
+
+	        // Setup a list of remove events.
+	        removeEvents = EVENT_NAMES.map(function (transitionName) {
+
+	            // Create a localized handler
+	            var _handler = function handler(e) {
+	                _transitionHandler(resolve, element, e);
+
+	                // Cleanup timeout (if exists)
+	                if (timeout) {
+	                    clearTimeout(timeout);
+	                    timeout = null;
+	                }
+
+	                // Cleanup listeners
+	                _cleanup(removeEvents);
+	                // Cleanup list of remover functions.
+	                removeEvents = null;
+	                _handler = null;
+	                resolve = null;
+	                reject = null;
+	            };
+
+	            // _addEventListeners returns an event remover function, so return it.
+	            return _addEventListeners(element, transitionName, _handler);
+	        });
+	    });
+	};
+
+	exports.promisifyTransitionEvent = promisifyTransitionEvent;
+
+/***/ },
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -1501,7 +1845,9 @@ return /******/ (function(modules) { // webpackBootstrap
 		    capture: false,
 		    passive: false,
 		    debounce: false,
-		    debounceDelay: 250
+		    throttle: false,
+		    debounceDelay: 250,
+		    throttleDelay: 250
 		};
 
 		var addEventListener = helpers.addEventListener,
@@ -1532,6 +1878,60 @@ return /******/ (function(modules) { // webpackBootstrap
 		        }, delay);
 		    };
 		};
+		// Inspired from underscore throttle https://github.com/jashkenas/underscore/blob/master/underscore.js
+		var throttleFn = function throttleFn(cb, delay) {
+		    var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
+		    var context = void 0;
+		    var args = void 0;
+		    var result = void 0;
+
+		    var timeout = null;
+		    var previous = 0;
+
+		    var _options$leading = options.leading,
+		        leading = _options$leading === undefined ? true : _options$leading,
+		        _options$trailing = options.trailing,
+		        trailing = _options$trailing === undefined ? false : _options$trailing;
+
+		    var later = function later() {
+		        previous = !leading ? 0 : Date.now();
+		        timeout = null;
+		        result = cb.apply(context, args);
+		        if (!timeout) {
+		            context = args = null;
+		        }
+		    };
+
+		    return function () {
+		        context = this;
+		        args = arguments;
+
+		        var now = Date.now();
+		        if (!previous && !leading) {
+		            previous = now;
+		        }
+
+		        var remaining = wait - (now - previous);
+
+		        if (remaining <= 0 || remaining > wait) {
+		            if (timeout) {
+		                clearTimeout(timeout);
+		                timeout = null;
+		            }
+
+		            previous = now;
+		            result = cb.apply(context, args);
+
+		            if (!timeout) {
+		                context = args = null;
+		            }
+		        } else if (!timeout && trailing) {
+		            timeout = setTimeout(later, remaining);
+		        }
+		        return result;
+		    };
+		};
 
 		var switchOn = function switchOn(target, eventName, cb) {
 		    var opts = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
@@ -1540,10 +1940,20 @@ return /******/ (function(modules) { // webpackBootstrap
 		    if (addEventListener) {
 		        var _opts$debounce = opts.debounce,
 		            debounce = _opts$debounce === undefined ? false : _opts$debounce,
-		            debounceDelay = opts.debounceDelay;
-		        // http://stackoverflow.com/questions/2891096/addeventlistener-using-apply
+		            _opts$throttle = opts.throttle,
+		            throttle = _opts$throttle === undefined ? false : _opts$throttle,
+		            debounceDelay = opts.debounceDelay,
+		            throttleDelay = opts.throttleDelay;
 
-		        target.addEventListener.apply(target, getEventsArgs(eventName, debounce ? debounceFn(cb, debounceDelay) : cb, opts));
+		        var handler = cb;
+		        if (debounce) {
+		            handler = debounceFn(cb, debounceDelay);
+		        } else if (throttle) {
+		            handler = throttleFn(cb, throttleDelay);
+		        }
+
+		        // http://stackoverflow.com/questions/2891096/addeventlistener-using-apply
+		        target.addEventListener.apply(target, getEventsArgs(eventName, handler, opts));
 		    }
 		};
 
@@ -1811,7 +2221,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	;
 
 /***/ },
-/* 7 */
+/* 9 */
 /***/ function(module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {
@@ -1832,31 +2242,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	    }
 	};
 
-	var getClassAsArray = exports.getClassAsArray = function getClassAsArray(el) {
-	    if (!el) {
-	        return [];
-	    }
-	    var originalClass = el.className;
-	    var originalClassArray = originalClass.split(' ');
-	    return originalClassArray;
-	};
-
 	var addClassFromArray = exports.addClassFromArray = function addClassFromArray(el, arr) {
-	    if (el) {
-	        el.className = arr.join(' ').trim();
-	    }
-	};
-
-	var pushUniqueStringToArray = exports.pushUniqueStringToArray = function pushUniqueStringToArray(arr, string) {
-	    if (Array.isArray(arr) && !arr.includes(string)) {
-	        arr.push(string);
-	    }
-	};
-
-	var removeStringFromArray = exports.removeStringFromArray = function removeStringFromArray(arr, string) {
-	    if (Array.isArray(arr) && arr.includes(string)) {
-	        arr.splice(arr.indexOf(string), 1);
-	    }
+	    arr.forEach(function (cls) {
+	        el.classList.add(cls);
+	    });
 	};
 
 /***/ }
