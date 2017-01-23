@@ -58,6 +58,7 @@ class App extends Component {
                     onThumbnailHover={this._onThumbnailHover}
                     onArrowClick={this._onArrowClick}
                     lazyLoad={true}
+                    progressiveLazyLoad={true}
                     lazyLoadAnimation={true}
                     aspectRatio={'6x4'}
                     thumbnailPosition='Y'
