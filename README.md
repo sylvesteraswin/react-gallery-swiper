@@ -57,6 +57,7 @@ class App extends React.Component {
 * `images` (required) Array of objects.
 * `showNav`: Boolean, default `true`.
 * `lazyLoad`: Boolean, default `false`.
+* `progressiveLazyLoad`: Boolean, default `false`.
 * `lazyLoadAnimation`: Boolean, default `false`.
 * `aspectRatio`: String, default `square`. Accepts one of  `square`, `3x4`, `4x6`, `5x7`, `8x10`, `4x3`, `6x4`, `7x5`, `10x8`,
 * `infinite`: Boolean, default `true`.
