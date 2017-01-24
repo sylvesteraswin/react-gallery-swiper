@@ -11,29 +11,8 @@ export const applyStyles = (styles, node, noValue = false) => {
     }
 };
 
-export const getClassAsArray = (el) => {
-    if (!el) {
-        return [];
-    }
-    const originalClass = el.className;
-    const originalClassArray = originalClass.split(' ');
-    return originalClassArray;
-};
-
 export const addClassFromArray = (el, arr) => {
-    if (el) {
-        el.className = arr.join(' ').trim();
-    }
-};
-
-export const pushUniqueStringToArray = (arr, string) => {
-    if (Array.isArray(arr) && !arr.includes(string)) {
-        arr.push(string);
-    }
-};
-
-export const removeStringFromArray = (arr, string) => {
-    if (Array.isArray(arr) && arr.includes(string)) {
-        arr.splice(arr.indexOf(string), 1);
-    }
+    arr.forEach((cls) => {
+        el.classList.add(cls);
+    });
 };

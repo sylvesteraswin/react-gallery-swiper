@@ -5,19 +5,18 @@ import Swipeable from 'react-swipeable';
 import classnames from 'classnames';
 
 import debounce from './utils/debounce-event-handler';
+import { createNewImage } from './utils/image-utils';
+import { promisifyTransitionEvent } from './utils/promisify-transition-event';
 import AttachHandler from 'react-attach-handler';
 
 import {
-    getClassAsArray,
-    removeStringFromArray,
-    pushUniqueStringToArray,
     addClassFromArray,
 } from './utils/attr-helpers';
 
 const BASE_CLASS = 'zvui-gallery-swiper';
 const LEFT_ARROW = 37;
 const RIGHT_ARROW = 39;
-const DEBOUNCE_INTERVAL = 500;
+const DEBOUNCE_INTERVAL = 200;
 
 const NAN_IMG = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const LOADED_CLS = 'loaded';
@@ -59,7 +58,7 @@ class GallerySwiper extends Component {
                         thumbnails: false,
                     },
                 }, () => {
-                    this._resetImages();
+                    this._resetSwiper();
                 });
             }
         }
@@ -201,25 +200,25 @@ class GallerySwiper extends Component {
         return [];
     };
 
-    _resetImages = () => {
-        const {
-            images,
-        } = this.props;
+    _resetThumbImages = () => {
         // Reset all thumbnails to its original state so we can load new images
         const thumbnails = this._getAllThumbsInArray();
         if (thumbnails.length) {
             thumbnails.forEach((img) => {
-                const cls = getClassAsArray(img);
                 img.src = NAN_IMG;
-                removeStringFromArray(cls, LOADED_CLS);
-                pushUniqueStringToArray(cls, NOT_LOADED_CLS);
-                addClassFromArray(img, cls);
+                img.classList.add(NOT_LOADED_CLS);
+                img.classList.remove(LOADED_CLS);
             });
 
             // Once its reset, fire the loading function to lazy load all thumbnails
             this._updateIfLazyLoad();
         }
+    };
 
+    _resetMainImages = () => {
+        const {
+            images,
+        } = this.props;
         // This is the hack to remove the loading main images from DOM so the new images can be loaded
         const imageWraps = images.reduce((result, value, index) => {
             result.push(this[`_gallerySlide-${index}`]);
@@ -237,19 +236,36 @@ class GallerySwiper extends Component {
         }
     };
 
+
+    _resetSwiper = () => {
+        this._resetThumbImages();
+        this._resetMainImages();
+        // Once its reset, fire the loading function to lazy load all thumbnails
+        this._updateIfLazyLoad();
+    };
+
     _loadThumbnail = (img, index, images) => {
-        const image = new Image();
         const src = img.getAttribute('data-src');
 
-        image.onload = function() {
-            img.src = src;
-            const cls = getClassAsArray(img);
+        createNewImage(src)
+            .then((image) => {
+                if (img) {
+                    img.src = src;
+                    img.classList.remove(NOT_LOADED_CLS);
+                    img.classList.add(LOADED_CLS);
+                }
 
-            removeStringFromArray(cls, NOT_LOADED_CLS);
-            pushUniqueStringToArray(cls, LOADED_CLS);
-            addClassFromArray(img, cls);
-        };
-        image.src = src;
+                // Cleanup
+                if (image) {
+                    image = null;
+                }
+            })
+            .catch(({error, image}) => {
+                /*eslint-disable no-console*/
+                console.error(error);
+                console.error('Image Object:', image);
+                /*eslint-enable no-console*/
+            });
 
         if (index === images.length - 1) {
             this.setState({
@@ -258,6 +274,8 @@ class GallerySwiper extends Component {
                 },
             });
         }
+
+
     };
 
     _lazyLoadThumbnails = () => {
@@ -397,10 +415,21 @@ class GallerySwiper extends Component {
         const {
             onArrowClick,
         } = this.props;
+        const currentIndex = this.state.currentIndex;
 
         if (onArrowClick && typeof onArrowClick === 'function') {
             onArrowClick.call(this, 'left', this.state.currentIndex - 1, event);
         }
+
+        const elWrap = this[`_gallerySlide-${currentIndex}`];
+        promisifyTransitionEvent(elWrap.parentElement, 500)
+            .then(({element: el}) => {
+                const img = el.querySelector(`img.${MAIN_IMAGE_IDENTIFIER}`);
+                if (!img) {
+                    return;
+                }
+                img.classList.remove(MAIN_IMAGE_IDENTIFIER);
+            });
 
         this.goTo(this.state.currentIndex - 1, event);
     };
@@ -411,10 +440,22 @@ class GallerySwiper extends Component {
         const {
             onArrowClick,
         } = this.props;
+        const currentIndex = this.state.currentIndex;
 
         if (onArrowClick && typeof onArrowClick === 'function') {
             onArrowClick.call(this, 'right', this.state.currentIndex + 1, event);
         }
+
+        const elWrap = this[`_gallerySlide-${currentIndex}`];
+        promisifyTransitionEvent(elWrap.parentElement, 500)
+            .then(({element: el}) => {
+                const img = el.querySelector(`img.${MAIN_IMAGE_IDENTIFIER}`);
+                if (!img) {
+                    return;
+                }
+                img.classList.remove(MAIN_IMAGE_IDENTIFIER);
+            });
+
 
         this.goTo(this.state.currentIndex + 1, event);
     };
@@ -458,7 +499,7 @@ class GallerySwiper extends Component {
 
         if (fn && typeof fn === 'function') {
             fn();
-        };
+        }
     };
 
     _handleImageError = (event) => {
@@ -588,9 +629,95 @@ class GallerySwiper extends Component {
         }, 0);
     };
 
+    _loadImage (index) {
+
+        return new Promise((resolve, reject) => {
+            const elImg = this[`_galleryImage-${index}`];
+            const elWrap = this[`_gallerySlide-${index}`];
+
+            if (!elImg || !(elImg.nodeName.toLowerCase() === 'img')) {
+                return resolve(null);
+            }
+
+            const shouldLoad = elImg.classList.contains(NOT_LOADED_CLS);
+            if (!shouldLoad) {
+                return resolve(elImg);
+            }
+
+            const src = elImg.getAttribute('data-src');
+            if (!src) {
+                return resolve(null);
+            }
+            let loadedImage = null;
+
+            Array.from(elWrap.childNodes)
+                .some(node => {
+                    // Test if node source equals to the given source then the image exists
+                    // Last part of the condition is for cases where some of the url is missing
+                    // for example 'http'
+                    if (node.src && ((node.src === src) ||
+                        (new RegExp(src)).test(`${node.src}$`))) {
+                        loadedImage = node;
+                    }
+                    return !!loadedImage;
+                });
+            if (loadedImage) {
+                return resolve(loadedImage);
+            }
+
+            return createNewImage(src)
+                .then((img) => {
+                    elWrap.appendChild(img);
+                    // img.classList.add(LOADED_CLS);
+                    resolve(img);
+                })
+                .catch(reject);
+        });
+
+    }
+
+    _loadImageErrorHandler ({error, image}) {
+        /*eslint-disable no-console*/
+        if (arguments[0] instanceof Error) {
+            return console.error(arguments[0]);
+        }
+
+        console.error(error);
+        console.error('Image Object:', image);
+        /*eslint-enable no-console*/
+    };
+
+    _addLoadedClassToImage (img) {
+        if (img) {
+            addClassFromArray(img, [LOADED_CLS]);
+        }
+    }
+
+    _progressiveLazyLoad () {
+        const {
+            images,
+        } = this.props;
+
+        const index = this.whereAmI();
+
+        const prevIndex = (index - 1 < 0) ? images.length - 1 : index - 1;
+        const nextIndex = (index + 1 > images.length - 1) ? 0 : index + 1;
+        if (prevIndex !== index) {
+            this._loadImage(prevIndex)
+                .then(this._addLoadedClassToImage)
+                .catch(this._loadImageErrorHandler);
+        }
+        if (nextIndex !== index) {
+            this._loadImage(nextIndex)
+                .then(this._addLoadedClassToImage)
+                .catch(this._loadImageErrorHandler);
+        }
+    }
+
     _loadMainImage = () => {
         const {
             lazyLoad,
+            progressiveLazyLoad,
         } = this.props;
 
         if (!lazyLoad) {
@@ -599,27 +726,23 @@ class GallerySwiper extends Component {
 
         const index = this.whereAmI();
 
-        const elImg = this[`_galleryImage-${index}`];
-        const elWrap = this[`_gallerySlide-${index}`];
 
-        if (elImg && (elImg.nodeName.toLowerCase() === 'img')) {
-            const shouldLoad = (elImg.className.indexOf(NOT_LOADED_CLS) >= 0);
-            const src = elImg.getAttribute('data-src');
-            if (shouldLoad && src) {
-                const img = new Image();
-                img.src = src;
-                elWrap.appendChild(img);
-                img.onload = () => {
-                    const cls = getClassAsArray(img);
-                    // img.className = LOADED_CLS;
-                    setTimeout(() => {
-                        pushUniqueStringToArray(cls, LOADED_CLS);
-                        pushUniqueStringToArray(cls, MAIN_IMAGE_IDENTIFIER);
-                        addClassFromArray(img, cls);
-                    }, 500);
-                };
-            }
-        }
+        this._loadImage(index)
+            .then((img) => {
+                if (progressiveLazyLoad) {
+                    this._progressiveLazyLoad();
+                }
+
+                if (!img) {
+                    return null;
+                }
+
+                setTimeout(() => {
+                    addClassFromArray(img, [LOADED_CLS, MAIN_IMAGE_IDENTIFIER]);
+                }, 100);
+
+            })
+            .catch(this._loadImageErrorHandler);
     };
 
     _renderItem = (img, index) => {
@@ -961,52 +1084,52 @@ class GallerySwiper extends Component {
                         className={classnames(`${BASE_CLASS}-slides-wrapper`)}>
                         {
                             this._canNavigate() ?
-                                [
-                                    showNav &&
-                                    <div
-                                        className={`${BASE_CLASS}-navigation-wrapper`}
-                                        key='navigation'>
-                                        <button
-                                            className={`${BASE_CLASS}-navigation left`}
-                                            disabled={!this._canSlideLeft()}
-                                            onTouchStart={this._slideLeft}
-                                            onClick={this._slideLeft}
-                                            />
+                            [
+                                showNav &&
+                                <div
+                                    className={`${BASE_CLASS}-navigation-wrapper`}
+                                    key='navigation'>
+                                    <button
+                                        className={`${BASE_CLASS}-navigation left`}
+                                        disabled={!this._canSlideLeft()}
+                                        onTouchStart={this._slideLeft}
+                                        onClick={this._slideLeft}
+                                        />
 
-                                        <button
-                                            className={`${BASE_CLASS}-navigation right`}
-                                            disabled={!this._canSlideRight()}
-                                            onTouchStart={this._slideRight}
-                                            onClick={this._slideRight}
-                                            />
-                                    </div>,
+                                    <button
+                                        className={`${BASE_CLASS}-navigation right`}
+                                        disabled={!this._canSlideRight()}
+                                        onTouchStart={this._slideRight}
+                                        onClick={this._slideRight}
+                                        />
+                                </div>,
 
-                                    disableSwipe ?
+                                disableSwipe ?
+                                <div
+                                    className={`${BASE_CLASS}-slides`}
+                                    ref={i => this._gallerySwiper = i}
+                                    key='slides'>
+                                    {slides}
+                                </div>
+                                :
+                                <Swipeable
+                                    className={`${BASE_CLASS}-swipe`}
+                                    key={'swipeable'}
+                                    flickThreshold={.2}
+                                    delta={1}
+                                    onSwipingLeft={this._handleSwiping.bind(this, -1)}
+                                    onSwipingRight={this._handleSwiping.bind(this, 1)}
+                                    onSwiped={this._handleOnSwiped}
+                                    onSwipedLeft={this._handleOnSwipedTo.bind(this, 1)}
+                                    onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
+                                    >
                                     <div
-                                        className={`${BASE_CLASS}-slides`}
                                         ref={i => this._gallerySwiper = i}
-                                        key='slides'>
+                                        className={`${BASE_CLASS}-slides`}>
                                         {slides}
                                     </div>
-                                    :
-                                    <Swipeable
-                                        className={`${BASE_CLASS}-swipe`}
-                                        key={'swipeable'}
-                                        flickThreshold={.2}
-                                        delta={1}
-                                        onSwipingLeft={this._handleSwiping.bind(this, -1)}
-                                        onSwipingRight={this._handleSwiping.bind(this, 1)}
-                                        onSwiped={this._handleOnSwiped}
-                                        onSwipedLeft={this._handleOnSwipedTo.bind(this, 1)}
-                                        onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
-                                        >
-                                        <div
-                                            ref={i => this._gallerySwiper = i}
-                                            className={`${BASE_CLASS}-slides`}>
-                                            {slides}
-                                        </div>
-                                    </Swipeable>,
-                                ]
+                                </Swipeable>,
+                            ]
                             :
                             <div
                                 ref={i => this._gallerySwiper = i}
@@ -1078,6 +1201,7 @@ GallerySwiper.propTypes = {
         '10x8',
     ]),
     lazyLoad: PropTypes.bool,
+    progressiveLazyLoad: PropTypes.bool,
     lazyLoadAnimation: PropTypes.bool,
     infinite: PropTypes.bool,
     showIndex: PropTypes.bool,
@@ -1107,6 +1231,7 @@ GallerySwiper.defaultProps = {
     showNav: true,
     aspectRatio: 'square',
     lazyLoad: false,
+    progressiveLazyLoad: false,
     lazyLoadAnimation: false,
     infinite: true,
     showIndex: false,

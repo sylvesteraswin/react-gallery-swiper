@@ -170,7 +170,7 @@ $base-class: zvui-gallery-swiper;
             height: 100%;
             max-width: 100%;
             box-sizing: border-box;
-            transition: opacity .5s linear;
+            transition: opacity .3s linear;
             opacity: 0;
             &.notloaded {
                 &.animate {
