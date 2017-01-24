@@ -1053,7 +1053,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	                var loadedImage = null;
 
 	                Array.from(elWrap.childNodes).some(function (node) {
-	                    if (node.src === src) {
+	                    // Test if node source equals to the given source then the image exists
+	                    // Last part of the condition is for cases where some of the url is missing
+	                    // for example 'http'
+	                    if (node.src && (node.src === src || new RegExp(src).test(node.src + '$'))) {
 	                        loadedImage = node;
 	                    }
 	                    return !!loadedImage;
