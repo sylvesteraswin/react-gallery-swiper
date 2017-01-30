@@ -50,7 +50,7 @@ class GallerySwiper extends Component {
             lazyLoad: newLazyload,
         } = nextProps;
 
-        if (images !== newImages) {
+        if (images !== newImages || images.length !== newImages.length) {
             if (lazyLoad || newLazyload) {
                 this.setState({
                     lazyLoad: {
