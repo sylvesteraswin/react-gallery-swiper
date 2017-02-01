@@ -94,13 +94,11 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	var _imageUtils = __webpack_require__(6);
 
-	var _promisifyTransitionEvent = __webpack_require__(7);
-
-	var _reactAttachHandler = __webpack_require__(8);
+	var _reactAttachHandler = __webpack_require__(7);
 
 	var _reactAttachHandler2 = _interopRequireDefault(_reactAttachHandler);
 
-	var _attrHelpers = __webpack_require__(9);
+	var _attrHelpers = __webpack_require__(8);
 
 	function _interopRequireDefault(obj) {
 	    return obj && obj.__esModule ? obj : { default: obj };
@@ -147,7 +145,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var BASE_CLASS = 'zvui-gallery-swiper';
 	var LEFT_ARROW = 37;
 	var RIGHT_ARROW = 39;
-	var DEBOUNCE_INTERVAL = 200;
+	var DEBOUNCE_INTERVAL = 500;
 
 	var NAN_IMG = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 	var LOADED_CLS = 'loaded';
@@ -189,7 +187,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var newImages = nextProps.images,
 	                newLazyload = nextProps.lazyLoad;
 
-	            if (images.length !== newImages.length) {
+	            if (images !== newImages) {
 	                if (lazyLoad || newLazyload) {
 	                    _this.setState({
 	                        lazyLoad: {
@@ -200,6 +198,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    });
 	                }
 	            }
+	        }, _this._propsHaveChanged = function (nextProps) {
+	            var propKeys = Object.keys(nextProps);
+	            return !propKeys.every(function (key) {
+	                return _this.props[key] === nextProps[key];
+	            });
+	        }, _this._stateHasChanged = function (nextState) {
+	            var stateKeys = Object.keys(nextState);
+	            return !stateKeys.every(function (key) {
+	                return _this.state[key] === nextState[key];
+	            });
+	        }, _this.shouldComponentUpdate = function (nextProps, nextState) {
+	            return _this._propsHaveChanged(nextProps) || _this._stateHasChanged(nextState);
 	        }, _this.componentDidUpdate = function (prevProps, prevState) {
 	            var showThumbnails = prevProps.showThumbnails,
 	                images = prevProps.images;
@@ -316,20 +326,25 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _this._updateIfLazyLoad();
 	            }
 	        }, _this._resetMainImages = function () {
-	            var images = _this.props.images;
-	            // This is the hack to remove the loading main images from DOM so the new images can be loaded
 
-	            var imageWraps = images.reduce(function (result, value, index) {
-	                result.push(_this['_gallerySlide-' + index]);
+	            // This is the hack to remove the loading main images from DOM so the new images can be loaded
+	            // Collect al gallery slides
+	            var keys = Object.keys(_this);
+	            var gallerySlides = keys.reduce(function (result, key) {
+	                if (key.indexOf('_gallerySlide') === 0) {
+	                    result.push(_this[key]);
+	                }
 	                return result;
 	            }, []);
-
-	            if (imageWraps.length) {
-	                imageWraps.forEach(function (img) {
-	                    // This check is to make sure there is a loaded image in the container
-	                    var loadedImage = img.lastChild.classList.contains(MAIN_IMAGE_IDENTIFIER);
-	                    if (loadedImage) {
-	                        img.removeChild(img.lastChild);
+	            // Iterate slides and remove all nodes with the loaded class
+	            if (gallerySlides.length) {
+	                gallerySlides.forEach(function (slide) {
+	                    if (slide && slide.childNodes) {
+	                        Array.from(slide.childNodes).forEach(function (node) {
+	                            if (node.tagName.toLowerCase() === 'img' && node.classList.contains(LOADED_CLS)) {
+	                                slide.removeChild(node);
+	                            }
+	                        });
 	                    }
 	                });
 	            }
@@ -475,22 +490,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this._slideLeft = function (event) {
 	            var onArrowClick = _this.props.onArrowClick;
 
-	            var currentIndex = _this.state.currentIndex;
-
 	            if (onArrowClick && typeof onArrowClick === 'function') {
 	                onArrowClick.call(_this, 'left', _this.state.currentIndex - 1, event);
 	            }
-
-	            var elWrap = _this['_gallerySlide-' + currentIndex];
-	            (0, _promisifyTransitionEvent.promisifyTransitionEvent)(elWrap.parentElement, 500).then(function (_ref3) {
-	                var el = _ref3.element;
-
-	                var img = el.querySelector('img.' + MAIN_IMAGE_IDENTIFIER);
-	                if (!img) {
-	                    return;
-	                }
-	                img.classList.remove(MAIN_IMAGE_IDENTIFIER);
-	            });
 
 	            _this.goTo(_this.state.currentIndex - 1, event);
 	        }, _this._canSlideRight = function () {
@@ -498,22 +500,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }, _this._slideRight = function (event) {
 	            var onArrowClick = _this.props.onArrowClick;
 
-	            var currentIndex = _this.state.currentIndex;
-
 	            if (onArrowClick && typeof onArrowClick === 'function') {
 	                onArrowClick.call(_this, 'right', _this.state.currentIndex + 1, event);
 	            }
-
-	            var elWrap = _this['_gallerySlide-' + currentIndex];
-	            (0, _promisifyTransitionEvent.promisifyTransitionEvent)(elWrap.parentElement, 500).then(function (_ref4) {
-	                var el = _ref4.element;
-
-	                var img = el.querySelector('img.' + MAIN_IMAGE_IDENTIFIER);
-	                if (!img) {
-	                    return;
-	                }
-	                img.classList.remove(MAIN_IMAGE_IDENTIFIER);
-	            });
 
 	            _this.goTo(_this.state.currentIndex + 1, event);
 	        }, _this._handleResize = function () {
@@ -702,7 +691,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                thumbnail = NAN_IMG;
 	            }
 
-	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad && !(!lazyLoadAnimation && index === saneStartIndex)), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad || !lazyLoadAnimation && index === saneStartIndex), _classnames));
+	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad && !(!lazyLoadAnimation && index === saneStartIndex)), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad || !lazyLoadAnimation && index === saneStartIndex), _defineProperty(_classnames, MAIN_IMAGE_IDENTIFIER, index === saneStartIndex), _classnames));
 
 	            var imgProps = {
 	                className: classes,
@@ -710,7 +699,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                ref: function ref(i) {
 	                    return _this['_galleryImage-' + index] = i;
 	                },
-	                'data-src': lazyLoad && !(!lazyLoadAnimation && index === saneStartIndex) ? original : '',
+	                'data-src': original,
 	                alt: originalAlt,
 	                onLoad: onImageLoad,
 	                onError: onImageError,
@@ -1041,11 +1030,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return resolve(null);
 	                }
 
-	                var shouldLoad = elImg.classList.contains(NOT_LOADED_CLS);
-	                if (!shouldLoad) {
-	                    return resolve(elImg);
-	                }
-
 	                var src = elImg.getAttribute('data-src');
 	                if (!src) {
 	                    return resolve(null);
@@ -1074,9 +1058,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	    }, {
 	        key: '_loadImageErrorHandler',
-	        value: function _loadImageErrorHandler(_ref5) {
-	            var error = _ref5.error,
-	                image = _ref5.image;
+	        value: function _loadImageErrorHandler(_ref3) {
+	            var error = _ref3.error,
+	                image = _ref3.image;
 
 	            /*eslint-disable no-console*/
 	            if (arguments[0] instanceof Error) {
@@ -1591,136 +1575,6 @@ return /******/ (function(modules) { // webpackBootstrap
 
 /***/ },
 /* 7 */
-/***/ function(module, exports) {
-
-	Object.defineProperty(exports, "__esModule", {
-	    value: true
-	});
-	/**
-	 * This helper sets a transition event on an html element. It returns a promise that resolves when
-	 * the event is fired. This is useful for cases when you wish to do something after transition
-	 * has ended.
-	 */
-
-	var EVENT_NAMES = ['webkitTransitionEnd', 'transitionend', 'msTransitionEnd', 'oTransitionEnd'];
-
-	/**
-	 *
-	 * @param {HTMLElement} element
-	 * @param {string} eventName
-	 * @param {Function} cb
-	 * @private
-	 */
-	var _removeEventListener = function _removeEventListener(element, eventName, cb) {
-	    element.removeEventListener(eventName, cb);
-	};
-
-	/**
-	 * Adds an event listener and returns a (bound) function that removes the event listener
-	 * @param {HTMLElement} element
-	 * @param {string} eventName
-	 * @param {Function} cb
-	 * @returns {Function}
-	 * @private
-	 */
-	var _addEventListeners = function _addEventListeners(element, eventName, cb) {
-	    element.addEventListener(eventName, cb);
-	    return _removeEventListener.bind(undefined, element, eventName, cb);
-	};
-
-	/**
-	 * @param {Function} resolve
-	 * @param {HTMLElement} element
-	 * @param {Event} event
-	 * @private
-	 */
-	var _transitionHandler = function _transitionHandler(resolve, element, event) {
-	    resolve({
-	        element: element,
-	        event: event
-	    });
-	};
-
-	/**
-	 * Iterates the cleanup list and invokes all the cleanups to remove all listeners
-	 * @param {Array<Function>} cleanupFnsList
-	 * @private
-	 */
-	var _cleanup = function _cleanup(cleanupFnsList) {
-	    cleanupFnsList.forEach(function (cleanupFn) {
-	        return cleanupFn();
-	    });
-	};
-
-	/**
-	 * Takes an html element and return a promise that resolves when a transition event is fired. When
-	 * timeLimit is provided, the promise will resolve after timeLimit ms regardless of the event.
-	 * @param {HTMLElement} element
-	 * @param {number?} timeLimit
-	 * @returns {Promise<{element: HTMLElement, event?: TransitionEvent}>}
-	 */
-	var promisifyTransitionEvent = function promisifyTransitionEvent(element, timeLimit) {
-	    return new Promise(function (resolve, reject) {
-
-	        // Test HTMLElement has addEventListener
-	        if (!element.addEventListener) {
-	            reject(new TypeError('element argument has no "addEventListener" method.'));
-	        }
-
-	        var removeEvents = void 0;
-
-	        // Setup timeout to resolve the promise regardless of the event
-	        var timeout = void 0;
-	        if (timeLimit) {
-	            timeout = setTimeout(function () {
-	                resolve({
-	                    element: element
-	                });
-
-	                // Cleanup
-	                if (removeEvents) {
-	                    // Cleanup listeners
-	                    _cleanup(removeEvents);
-	                    // Cleanup list of remover functions.
-	                    removeEvents = null;
-	                }
-	                resolve = null;
-	                reject = null;
-	            }, timeLimit);
-	        }
-
-	        // Setup a list of remove events.
-	        removeEvents = EVENT_NAMES.map(function (transitionName) {
-
-	            // Create a localized handler
-	            var _handler = function handler(e) {
-	                _transitionHandler(resolve, element, e);
-
-	                // Cleanup timeout (if exists)
-	                if (timeout) {
-	                    clearTimeout(timeout);
-	                    timeout = null;
-	                }
-
-	                // Cleanup listeners
-	                _cleanup(removeEvents);
-	                // Cleanup list of remover functions.
-	                removeEvents = null;
-	                _handler = null;
-	                resolve = null;
-	                reject = null;
-	            };
-
-	            // _addEventListeners returns an event remover function, so return it.
-	            return _addEventListeners(element, transitionName, _handler);
-	        });
-	    });
-	};
-
-	exports.promisifyTransitionEvent = promisifyTransitionEvent;
-
-/***/ },
-/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	(function webpackUniversalModuleDefinition(root, factory) {
@@ -2224,7 +2078,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	;
 
 /***/ },
-/* 9 */
+/* 8 */
 /***/ function(module, exports) {
 
 	Object.defineProperty(exports, "__esModule", {

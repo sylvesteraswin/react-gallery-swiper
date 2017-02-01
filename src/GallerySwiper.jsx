@@ -6,7 +6,6 @@ import classnames from 'classnames';
 
 import debounce from './utils/debounce-event-handler';
 import { createNewImage } from './utils/image-utils';
-import { promisifyTransitionEvent } from './utils/promisify-transition-event';
 import AttachHandler from 'react-attach-handler';
 
 import {
@@ -16,7 +15,7 @@ import {
 const BASE_CLASS = 'zvui-gallery-swiper';
 const LEFT_ARROW = 37;
 const RIGHT_ARROW = 39;
-const DEBOUNCE_INTERVAL = 200;
+const DEBOUNCE_INTERVAL = 500;
 
 const NAN_IMG = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const LOADED_CLS = 'loaded';
@@ -51,7 +50,7 @@ class GallerySwiper extends Component {
             lazyLoad: newLazyload,
         } = nextProps;
 
-        if (images.length !== newImages.length) {
+        if (images !== newImages || images.length !== newImages.length) {
             if (lazyLoad || newLazyload) {
                 this.setState({
                     lazyLoad: {
@@ -62,6 +61,20 @@ class GallerySwiper extends Component {
                 });
             }
         }
+    };
+
+    _propsHaveChanged = (nextProps) => {
+        const propKeys = Object.keys(nextProps);
+        return !(propKeys.every(key => this.props[key] === nextProps[key]));
+    };
+
+    _stateHasChanged = (nextState) => {
+        const stateKeys = Object.keys(nextState);
+        return !(stateKeys.every(key => this.state[key] === nextState[key]));
+    };
+
+    shouldComponentUpdate = (nextProps, nextState) => {
+        return this._propsHaveChanged(nextProps) || this._stateHasChanged(nextState);
     };
 
     componentDidUpdate = (prevProps, prevState) => {
@@ -216,21 +229,26 @@ class GallerySwiper extends Component {
     };
 
     _resetMainImages = () => {
-        const {
-            images,
-        } = this.props;
+
         // This is the hack to remove the loading main images from DOM so the new images can be loaded
-        const imageWraps = images.reduce((result, value, index) => {
-            result.push(this[`_gallerySlide-${index}`]);
+        // Collect al gallery slides
+        const keys = Object.keys(this);
+        const gallerySlides = keys.reduce((result, key) => {
+            if (key.indexOf('_gallerySlide') === 0) {
+                result.push(this[key]);
+            }
             return result;
         }, []);
-
-        if (imageWraps.length) {
-            imageWraps.forEach((img) => {
-                // This check is to make sure there is a loaded image in the container
-                const loadedImage = img.lastChild.classList.contains(MAIN_IMAGE_IDENTIFIER);
-                if (loadedImage) {
-                    img.removeChild(img.lastChild);
+        // Iterate slides and remove all nodes with the loaded class
+        if (gallerySlides.length) {
+            gallerySlides.forEach((slide) => {
+                if (slide && slide.childNodes) {
+                    Array.from(slide.childNodes).forEach(node => {
+                        if (node.tagName.toLowerCase() === 'img' &&
+                            node.classList.contains(LOADED_CLS)) {
+                            slide.removeChild(node);
+                        }
+                    });
                 }
             });
         }
@@ -415,21 +433,9 @@ class GallerySwiper extends Component {
         const {
             onArrowClick,
         } = this.props;
-        const currentIndex = this.state.currentIndex;
-
         if (onArrowClick && typeof onArrowClick === 'function') {
             onArrowClick.call(this, 'left', this.state.currentIndex - 1, event);
         }
-
-        const elWrap = this[`_gallerySlide-${currentIndex}`];
-        promisifyTransitionEvent(elWrap.parentElement, 500)
-            .then(({element: el}) => {
-                const img = el.querySelector(`img.${MAIN_IMAGE_IDENTIFIER}`);
-                if (!img) {
-                    return;
-                }
-                img.classList.remove(MAIN_IMAGE_IDENTIFIER);
-            });
 
         this.goTo(this.state.currentIndex - 1, event);
     };
@@ -440,22 +446,9 @@ class GallerySwiper extends Component {
         const {
             onArrowClick,
         } = this.props;
-        const currentIndex = this.state.currentIndex;
-
         if (onArrowClick && typeof onArrowClick === 'function') {
             onArrowClick.call(this, 'right', this.state.currentIndex + 1, event);
         }
-
-        const elWrap = this[`_gallerySlide-${currentIndex}`];
-        promisifyTransitionEvent(elWrap.parentElement, 500)
-            .then(({element: el}) => {
-                const img = el.querySelector(`img.${MAIN_IMAGE_IDENTIFIER}`);
-                if (!img) {
-                    return;
-                }
-                img.classList.remove(MAIN_IMAGE_IDENTIFIER);
-            });
-
 
         this.goTo(this.state.currentIndex + 1, event);
     };
@@ -639,11 +632,6 @@ class GallerySwiper extends Component {
                 return resolve(null);
             }
 
-            const shouldLoad = elImg.classList.contains(NOT_LOADED_CLS);
-            if (!shouldLoad) {
-                return resolve(elImg);
-            }
-
             const src = elImg.getAttribute('data-src');
             if (!src) {
                 return resolve(null);
@@ -777,13 +765,14 @@ class GallerySwiper extends Component {
             [NOT_LOADED_CLS]: lazyLoad && !(!lazyLoadAnimation && (index === saneStartIndex)),
             [ANIMATE_CLS]: lazyLoadAnimation,
             [LOADED_CLS]: !lazyLoad || (!lazyLoadAnimation && (index === saneStartIndex)),
+            [MAIN_IMAGE_IDENTIFIER]: index === saneStartIndex
         });
 
         const imgProps = {
             className: classes,
             src: (lazyLoad && !(!lazyLoadAnimation && (index === saneStartIndex))) ? thumbnail : original,
             ref: i => this[`_galleryImage-${index}`] = i,
-            'data-src': (lazyLoad && !(!lazyLoadAnimation && (index === saneStartIndex))) ? original : '',
+            'data-src': original,
             alt: originalAlt,
             onLoad: onImageLoad,
             onError: onImageError,
