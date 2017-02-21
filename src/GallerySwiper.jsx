@@ -264,6 +264,7 @@ class GallerySwiper extends Component {
 
     _loadThumbnail = (img, index, images) => {
         const src = img.getAttribute('data-src');
+        const type = img.getAttribute('data-type');
 
         createNewImage(src)
             .then((image) => {
@@ -271,6 +272,7 @@ class GallerySwiper extends Component {
                     img.src = src;
                     img.classList.remove(NOT_LOADED_CLS);
                     img.classList.add(LOADED_CLS);
+                    img.classList.add(type)
                 }
 
                 // Cleanup
@@ -633,6 +635,7 @@ class GallerySwiper extends Component {
             }
 
             const src = elImg.getAttribute('data-src');
+            const type = elImg.getAttribute('data-type');
             if (!src) {
                 return resolve(null);
             }
@@ -653,7 +656,7 @@ class GallerySwiper extends Component {
                 return resolve(loadedImage);
             }
 
-            return createNewImage(src)
+            return createNewImage(src, type)
                 .then((img) => {
                     elWrap.appendChild(img);
                     // img.classList.add(LOADED_CLS);
@@ -750,6 +753,7 @@ class GallerySwiper extends Component {
             sizes,
             original,
             originalAlt = '',
+            type = '',
         } = img;
 
         let {
@@ -765,7 +769,8 @@ class GallerySwiper extends Component {
             [NOT_LOADED_CLS]: lazyLoad && !(!lazyLoadAnimation && (index === saneStartIndex)),
             [ANIMATE_CLS]: lazyLoadAnimation,
             [LOADED_CLS]: !lazyLoad || (!lazyLoadAnimation && (index === saneStartIndex)),
-            [MAIN_IMAGE_IDENTIFIER]: index === saneStartIndex
+            [MAIN_IMAGE_IDENTIFIER]: index === saneStartIndex,
+            [type]: true,
         });
 
         const imgProps = {
@@ -773,6 +778,7 @@ class GallerySwiper extends Component {
             src: (lazyLoad && !(!lazyLoadAnimation && (index === saneStartIndex))) ? thumbnail : original,
             ref: i => this[`_galleryImage-${index}`] = i,
             'data-src': original,
+            'data-type': type,
             alt: originalAlt,
             onLoad: onImageLoad,
             onError: onImageError,
@@ -796,6 +802,7 @@ class GallerySwiper extends Component {
             thumbnail = '',
             thumbnailAlt = '',
             onThumbnailError = this._handleImageError,
+            type,
         } = img;
 
         const {
@@ -813,6 +820,7 @@ class GallerySwiper extends Component {
             className: classes,
             src: lazyLoad ? NAN_IMG : thumbnail,
             'data-src': lazyLoad ? thumbnail : '',
+            'data-type': type,
             alt: thumbnailAlt,
             onError: onThumbnailError,
         };
