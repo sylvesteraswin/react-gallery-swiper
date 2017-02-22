@@ -4,7 +4,7 @@
  * @param {string} src
  * @returns {Promise<Image>}
  */
-const createNewImage = (src) => {
+const createNewImage = (src, type) => {
     return new Promise((resolve, reject) => {
         const image = new Image();
 
@@ -45,6 +45,7 @@ const createNewImage = (src) => {
 
 
         image.src = src;
+        image.classList.add(type)
     });
 };
 

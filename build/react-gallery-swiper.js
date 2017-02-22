@@ -187,7 +187,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var newImages = nextProps.images,
 	                newLazyload = nextProps.lazyLoad;
 
-	            if (images !== newImages) {
+	            if (images !== newImages || images.length !== newImages.length) {
 	                if (lazyLoad || newLazyload) {
 	                    _this.setState({
 	                        lazyLoad: {
@@ -355,12 +355,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	            _this._updateIfLazyLoad();
 	        }, _this._loadThumbnail = function (img, index, images) {
 	            var src = img.getAttribute('data-src');
+	            var type = img.getAttribute('data-type');
 
 	            (0, _imageUtils.createNewImage)(src).then(function (image) {
 	                if (img) {
 	                    img.src = src;
 	                    img.classList.remove(NOT_LOADED_CLS);
 	                    img.classList.add(LOADED_CLS);
+	                    img.classList.add(type);
 	                }
 
 	                // Cleanup
@@ -682,7 +684,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	            var sizes = img.sizes,
 	                original = img.original,
 	                _img$originalAlt = img.originalAlt,
-	                originalAlt = _img$originalAlt === undefined ? '' : _img$originalAlt;
+	                originalAlt = _img$originalAlt === undefined ? '' : _img$originalAlt,
+	                _img$type = img.type,
+	                type = _img$type === undefined ? '' : _img$type;
 	            var thumbnail = img.thumbnail;
 
 	            // This is make sure we should blank instead of blurred image
@@ -691,7 +695,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                thumbnail = NAN_IMG;
 	            }
 
-	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad && !(!lazyLoadAnimation && index === saneStartIndex)), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad || !lazyLoadAnimation && index === saneStartIndex), _defineProperty(_classnames, MAIN_IMAGE_IDENTIFIER, index === saneStartIndex), _classnames));
+	            var classes = (0, _classnames4.default)((_classnames = {}, _defineProperty(_classnames, NOT_LOADED_CLS, lazyLoad && !(!lazyLoadAnimation && index === saneStartIndex)), _defineProperty(_classnames, ANIMATE_CLS, lazyLoadAnimation), _defineProperty(_classnames, LOADED_CLS, !lazyLoad || !lazyLoadAnimation && index === saneStartIndex), _defineProperty(_classnames, MAIN_IMAGE_IDENTIFIER, index === saneStartIndex), _defineProperty(_classnames, type, true), _classnames));
 
 	            var imgProps = {
 	                className: classes,
@@ -700,6 +704,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return _this['_galleryImage-' + index] = i;
 	                },
 	                'data-src': original,
+	                'data-type': type,
 	                alt: originalAlt,
 	                onLoad: onImageLoad,
 	                onError: onImageError,
@@ -719,7 +724,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	                _img$thumbnailAlt = img.thumbnailAlt,
 	                thumbnailAlt = _img$thumbnailAlt === undefined ? '' : _img$thumbnailAlt,
 	                _img$onThumbnailError = img.onThumbnailError,
-	                onThumbnailError = _img$onThumbnailError === undefined ? _this._handleImageError : _img$onThumbnailError;
+	                onThumbnailError = _img$onThumbnailError === undefined ? _this._handleImageError : _img$onThumbnailError,
+	                type = img.type;
 	            var _this$props8 = _this.props,
 	                _this$props8$lazyLoad = _this$props8.lazyLoad,
 	                lazyLoad = _this$props8$lazyLoad === undefined ? false : _this$props8$lazyLoad,
@@ -732,6 +738,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                className: classes,
 	                src: lazyLoad ? NAN_IMG : thumbnail,
 	                'data-src': lazyLoad ? thumbnail : '',
+	                'data-type': type,
 	                alt: thumbnailAlt,
 	                onError: onThumbnailError
 	            };
@@ -1031,6 +1038,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                }
 
 	                var src = elImg.getAttribute('data-src');
+	                var type = elImg.getAttribute('data-type');
 	                if (!src) {
 	                    return resolve(null);
 	                }
@@ -1049,7 +1057,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	                    return resolve(loadedImage);
 	                }
 
-	                return (0, _imageUtils.createNewImage)(src).then(function (img) {
+	                return (0, _imageUtils.createNewImage)(src, type).then(function (img) {
 	                    elWrap.appendChild(img);
 	                    // img.classList.add(LOADED_CLS);
 	                    resolve(img);
@@ -1193,16 +1201,14 @@ return /******/ (function(modules) { // webpackBootstrap
 	    onSwipedRight: React.PropTypes.func,
 	    onSwipedDown: React.PropTypes.func,
 	    onSwipedLeft: React.PropTypes.func,
+	    onTap: React.PropTypes.func,
 	    flickThreshold: React.PropTypes.number,
 	    delta: React.PropTypes.number,
 	    preventDefaultTouchmoveEvent: React.PropTypes.bool,
 	    stopPropagation: React.PropTypes.bool,
 	    nodeName: React.PropTypes.string,
-	    trackMouse: React.PropTypes.bool
-	  },
-
-	  componentWillMount: function componentWillMount() {
-	    this.swipeable = getInitialState();
+	    trackMouse: React.PropTypes.bool,
+	    children: React.PropTypes.node
 	  },
 
 	  getDefaultProps: function getDefaultProps() {
@@ -1214,11 +1220,13 @@ return /******/ (function(modules) { // webpackBootstrap
 	      nodeName: 'div'
 	    };
 	  },
-
+	  componentWillMount: function componentWillMount() {
+	    this.swipeable = getInitialState();
+	  },
 	  calculatePos: function calculatePos(e) {
-	    var x = void 0,
-	        y = void 0;
-	    // If not a touch, determine point from mouse coordinates
+	    var x = void 0;
+	    var y = void 0;
+
 	    if (e.changedTouches) {
 	      x = e.changedTouches[0].clientX;
 	      y = e.changedTouches[0].clientY;
@@ -1244,7 +1252,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      velocity: velocity
 	    };
 	  },
-
 	  eventStart: function eventStart(e) {
 	    if (typeof this.props.onMouseDown === 'function') {
 	      this.props.onMouseDown(e);
@@ -1257,7 +1264,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    if (e.touches && e.touches.length > 1) {
 	      return;
 	    }
-	    // If not a touch, determine point from mouse coordinates
+
 	    var touches = e.touches;
 	    if (!touches) {
 	      touches = [{ clientX: e.clientX, clientY: e.clientY }];
@@ -1271,7 +1278,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      swiping: false
 	    };
 	  },
-
 	  eventMove: function eventMove(e) {
 	    if (typeof this.props.onMouseMove === 'function') {
 	      this.props.onMouseMove(e);
@@ -1304,24 +1310,18 @@ return /******/ (function(modules) { // webpackBootstrap
 	          this.props.onSwipingLeft && this.props.onSwipingLeft(e, pos.absX);
 	          cancelPageSwipe = true;
 	        }
-	      } else {
-	        if (this.props.onSwipingRight || this.props.onSwipedRight) {
-	          this.props.onSwipingRight && this.props.onSwipingRight(e, pos.absX);
-	          cancelPageSwipe = true;
-	        }
+	      } else if (this.props.onSwipingRight || this.props.onSwipedRight) {
+	        this.props.onSwipingRight && this.props.onSwipingRight(e, pos.absX);
+	        cancelPageSwipe = true;
 	      }
-	    } else {
-	      if (pos.deltaY > 0) {
-	        if (this.props.onSwipingUp || this.props.onSwipedUp) {
-	          this.props.onSwipingUp && this.props.onSwipingUp(e, pos.absY);
-	          cancelPageSwipe = true;
-	        }
-	      } else {
-	        if (this.props.onSwipingDown || this.props.onSwipedDown) {
-	          this.props.onSwipingDown && this.props.onSwipingDown(e, pos.absY);
-	          cancelPageSwipe = true;
-	        }
+	    } else if (pos.deltaY > 0) {
+	      if (this.props.onSwipingUp || this.props.onSwipedUp) {
+	        this.props.onSwipingUp && this.props.onSwipingUp(e, pos.absY);
+	        cancelPageSwipe = true;
 	      }
+	    } else if (this.props.onSwipingDown || this.props.onSwipedDown) {
+	      this.props.onSwipingDown && this.props.onSwipingDown(e, pos.absY);
+	      cancelPageSwipe = true;
 	    }
 
 	    this.swipeable.swiping = true;
@@ -1330,7 +1330,6 @@ return /******/ (function(modules) { // webpackBootstrap
 	      e.preventDefault();
 	    }
 	  },
-
 	  eventEnd: function eventEnd(e) {
 	    if (typeof this.props.onMouseUp === 'function') {
 	      this.props.onMouseUp(e);
@@ -1355,18 +1354,17 @@ return /******/ (function(modules) { // webpackBootstrap
 	        } else {
 	          this.props.onSwipedRight && this.props.onSwipedRight(e, pos.deltaX, isFlick);
 	        }
+	      } else if (pos.deltaY > 0) {
+	        this.props.onSwipedUp && this.props.onSwipedUp(e, pos.deltaY, isFlick);
 	      } else {
-	        if (pos.deltaY > 0) {
-	          this.props.onSwipedUp && this.props.onSwipedUp(e, pos.deltaY, isFlick);
-	        } else {
-	          this.props.onSwipedDown && this.props.onSwipedDown(e, pos.deltaY, isFlick);
-	        }
+	        this.props.onSwipedDown && this.props.onSwipedDown(e, pos.deltaY, isFlick);
 	      }
+	    } else {
+	      this.props.onTap && this.props.onTap(e);
 	    }
 
 	    this.swipeable = getInitialState();
 	  },
-
 	  render: function render() {
 	    var newProps = _extends({}, this.props, {
 	      onTouchStart: this.eventStart,
@@ -1387,6 +1385,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    delete newProps.onSwipedRight;
 	    delete newProps.onSwipedDown;
 	    delete newProps.onSwipedLeft;
+	    delete newProps.onTap;
 	    delete newProps.flickThreshold;
 	    delete newProps.delta;
 	    delete newProps.preventDefaultTouchmoveEvent;
@@ -1528,7 +1527,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	 * @param {string} src
 	 * @returns {Promise<Image>}
 	 */
-	var createNewImage = function createNewImage(src) {
+	var createNewImage = function createNewImage(src, type) {
 	    return new Promise(function (resolve, reject) {
 	        var image = new Image();
 
@@ -1568,6 +1567,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        image.addEventListener('abort', rejectHandler, { once: true });
 
 	        image.src = src;
+	        image.classList.add(type);
 	    });
 	};
 
