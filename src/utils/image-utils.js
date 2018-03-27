@@ -45,7 +45,7 @@ const createNewImage = (src, type) => {
 
 
         image.src = src;
-        image.classList.add(type)
+        image.classList.add(type);
     });
 };
 

@@ -1,11 +1,14 @@
 /*eslint-disable no-unused-vars*/
-import React, { Component, PropTypes } from 'react';
+import PropTypes from 'prop-types';
+
+import React, { Component } from 'react';
 import Swipeable from 'react-swipeable';
 /*eslint-enable no-unused-vars*/
 import classnames from 'classnames';
 
 import debounce from './utils/debounce-event-handler';
 import { createNewImage } from './utils/image-utils';
+// eslint-disable-next-line
 import AttachHandler from 'react-attach-handler';
 
 import {
@@ -272,7 +275,7 @@ class GallerySwiper extends Component {
                     img.src = src;
                     img.classList.remove(NOT_LOADED_CLS);
                     img.classList.add(LOADED_CLS);
-                    img.classList.add(type)
+                    img.classList.add(type);
                 }
 
                 // Cleanup
@@ -792,7 +795,7 @@ class GallerySwiper extends Component {
                 <div className={classnames('aspectRatio', `z--${aspectRatio}` )} />
                 <img
                     {...imgProps}
-                    />
+                />
             </div>
         );
     };
@@ -828,7 +831,7 @@ class GallerySwiper extends Component {
         return (
             <img
                 {...imgProps}
-                />
+            />
         );
     };
 
@@ -1011,7 +1014,7 @@ class GallerySwiper extends Component {
                     })}
                     style={Object.assign(this._getSlideStyle(index), slideTransformStyle)}
                     onClick={event => onClick.call(this, index, event)}
-                    >
+                >
                     {renderItem.call(this, img, index)}
                 </div>
             );
@@ -1029,7 +1032,7 @@ class GallerySwiper extends Component {
                         })}
                         onTouchStart={event => this._handleThumbnailClick.call(this, index, event)}
                         onClick={event => this._handleThumbnailClick.call(this, index, event)}
-                        >
+                    >
                         <div className={classnames('aspectRatio', `z--${aspectRatio}`)} />
                         {renderThumb.call(this, img)}
                     </a>
@@ -1045,9 +1048,9 @@ class GallerySwiper extends Component {
                             active: (currentIndex === index),
                         })}
                         onTouchStart=
-                        {event => this._handleBulletClick.call(this, index, event)}
+                            {event => this._handleBulletClick.call(this, index, event)}
                         onClick={event => this._handleBulletClick.call(this, index, event)}
-                        >
+                    >
                         <span>
                             {index}
                         </span>
@@ -1081,8 +1084,8 @@ class GallerySwiper extends Component {
                         className={classnames(`${BASE_CLASS}-slides-wrapper`)}>
                         {
                             this._canNavigate() ?
-                            [
-                                showNav &&
+                                [
+                                    showNav &&
                                 <div
                                     className={`${BASE_CLASS}-navigation-wrapper`}
                                     key='navigation'>
@@ -1091,48 +1094,48 @@ class GallerySwiper extends Component {
                                         disabled={!this._canSlideLeft()}
                                         onTouchStart={this._slideLeft}
                                         onClick={this._slideLeft}
-                                        />
+                                    />
 
                                     <button
                                         className={`${BASE_CLASS}-navigation right`}
                                         disabled={!this._canSlideRight()}
                                         onTouchStart={this._slideRight}
                                         onClick={this._slideRight}
-                                        />
+                                    />
                                 </div>,
 
-                                disableSwipe ?
+                                    disableSwipe ?
+                                        <div
+                                            className={`${BASE_CLASS}-slides`}
+                                            ref={i => this._gallerySwiper = i}
+                                            key='slides'>
+                                            {slides}
+                                        </div>
+                                        :
+                                        <Swipeable
+                                            className={`${BASE_CLASS}-swipe`}
+                                            key={'swipeable'}
+                                            flickThreshold={.2}
+                                            delta={1}
+                                            onSwipingLeft={this._handleSwiping.bind(this, -1)}
+                                            onSwipingRight={this._handleSwiping.bind(this, 1)}
+                                            onSwiped={this._handleOnSwiped}
+                                            onSwipedLeft={this._handleOnSwipedTo.bind(this, 1)}
+                                            onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
+                                        >
+                                            <div
+                                                ref={i => this._gallerySwiper = i}
+                                                className={`${BASE_CLASS}-slides`}>
+                                                {slides}
+                                            </div>
+                                        </Swipeable>,
+                                ]
+                                :
                                 <div
-                                    className={`${BASE_CLASS}-slides`}
                                     ref={i => this._gallerySwiper = i}
-                                    key='slides'>
+                                    className={`${BASE_CLASS}-slides`}>
                                     {slides}
                                 </div>
-                                :
-                                <Swipeable
-                                    className={`${BASE_CLASS}-swipe`}
-                                    key={'swipeable'}
-                                    flickThreshold={.2}
-                                    delta={1}
-                                    onSwipingLeft={this._handleSwiping.bind(this, -1)}
-                                    onSwipingRight={this._handleSwiping.bind(this, 1)}
-                                    onSwiped={this._handleOnSwiped}
-                                    onSwipedLeft={this._handleOnSwipedTo.bind(this, 1)}
-                                    onSwipedRight={this._handleOnSwipedTo.bind(this, -1)}
-                                    >
-                                    <div
-                                        ref={i => this._gallerySwiper = i}
-                                        className={`${BASE_CLASS}-slides`}>
-                                        {slides}
-                                    </div>
-                                </Swipeable>,
-                            ]
-                            :
-                            <div
-                                ref={i => this._gallerySwiper = i}
-                                className={`${BASE_CLASS}-slides`}>
-                                {slides}
-                            </div>
                         }
                         {
                             showBullets &&
@@ -1168,7 +1171,7 @@ class GallerySwiper extends Component {
                             style={(thumbnailPosition === 'Y') ? {
                                 height: galleryHeight,
                             } : {}}
-                            >
+                        >
                             <div
                                 ref={t => this._thumbnails = t}
                                 className={`${BASE_CLASS}-thumbnails-wrapper`}
