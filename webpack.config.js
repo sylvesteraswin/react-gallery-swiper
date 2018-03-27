@@ -14,21 +14,21 @@ const webpackConfig = {
         filename: pkg.name + '.js',
         library: capitalizeFirstLetter(camelCase(pkg.name)),
         library: 'GallerySwiper',
-        libraryTarget: 'umd'
+        libraryTarget: 'umd',
     },
-    mode: "production",
+    mode: 'production',
     externals: {
         react: {
             root: 'React',
             commonjs: 'react',
             commonjs2: 'react',
-            amd: 'react'
+            amd: 'react',
         },
         'react-dom': {
             root: 'ReactDOM',
             commonjs: 'react-dom',
             commonjs2: 'react-dom',
-            amd: 'react-dom'
+            amd: 'react-dom',
         }
     },
     module: {
@@ -39,7 +39,7 @@ const webpackConfig = {
                 use: 'babel-loader'
             }, {
                 test: /\.(scss|css)$/,
-                use: [MiniCssExtractPlugin.loader, "css-loader"]
+                use: [MiniCssExtractPlugin.loader, 'css-loader']
                 // use: ExtractTextPlugin.extract("style-loader", "css-loader")
             }
         ]
@@ -51,25 +51,14 @@ const webpackConfig = {
         new webpack.DefinePlugin({
             'process.env': {
                 NODE_ENV: JSON.stringify(process.env.NODE_ENV)
-            }
+            },
         }),
-        /*,
-    new webpack.optimize.UglifyJsPlugin({
-      sourceMap: false,
-      compress: {
-        warnings: false
-      },
-      output: {
-        comments: false
-      }
-    })*/
-    new MiniCssExtractPlugin({
-        // Options similar to the same options in webpackOptions.output
-        // both options are optional
-        filename: "react-gallery-swiper.css"
-      })
-        /* new ExtractTextPlugin("react-gallery-swiper.css", {allChunks: false}) */
-    ]
+        new MiniCssExtractPlugin({
+            // Options similar to the same options in webpackOptions.output
+            // both options are optional
+            filename: 'react-gallery-swiper.css',
+        }),
+    ],
 };
 
 export default webpackConfig;
