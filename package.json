@@ -1,6 +1,6 @@
 {
   "name": "react-gallery-swiper",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "React Image Carousel, React Image Gallery",
   "main": "lib/react-gallery-swiper",
   "browser": "lib/react-gallery-swiper",
