@@ -114,7 +114,7 @@
     "classnames": "^2.2.5",
     "mini-css-extract-plugin": "^0.2.0",
     "prop-types": "^15.6.1",
-    "react-attach-handler": "^0.1.2",
+    "react-attach-handler": "^0.2.0",
     "react-swipeable": "^4.2.1",
     "react-video-js": "^0.1.1"
   }
