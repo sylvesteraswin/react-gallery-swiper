@@ -6630,13 +6630,22 @@ react-addons-shallow-compare@^15.4.1:
     fbjs "^0.8.4"
     object-assign "^4.1.0"
 
-react-attach-handler@^0.2.0:
+react-attach-handler@0.2.0:
   version "0.2.0"
   resolved "https://registry.npmjs.org/react-attach-handler/-/react-attach-handler-0.2.0.tgz#748d9cad3c601bd22459daedc7ae1761fcefb188"
   dependencies:
     classnames "^2.2.5"
     prop-types "^15.6.1"
     react-addons-shallow-compare "^15.4.1"
+
+react-attach-handler@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.npmjs.org/react-attach-handler/-/react-attach-handler-0.2.1.tgz#754b6671c3e15e016e31b13996ca16f113c571b9"
+  dependencies:
+    classnames "^2.2.5"
+    prop-types "^15.6.1"
+    react-addons-shallow-compare "^15.4.1"
+    react-attach-handler "0.2.0"
 
 react-deep-force-update@^1.0.0:
   version "1.1.1"
