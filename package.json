@@ -2,8 +2,8 @@
   "name": "react-gallery-swiper",
   "version": "0.5.3",
   "description": "React Image Carousel, React Image Gallery",
-  "main": "lib/react-gallery-swiper",
-  "browser": "lib/react-gallery-swiper",
+  "main": "lib/GallerySwiper.js",
+  "browser": "lib/GallerySwiper.js",
   "devServer": {
     "host": "0.0.0.0",
     "port": 4000,
